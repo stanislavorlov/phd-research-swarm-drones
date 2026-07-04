@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package swarm_bridge;
+
+service DroneHub {
+  // Drone connects and keeps this stream open to receive commands
+  rpc ConnectToHive (DroneIdentity) returns (stream HiveCommand);
+
+  // Drone pushes telemetry (GPS, Battery, inference results) to server
+  rpc StreamTelemetry (stream DroneTelemetry) returns (ServerAck);
+}
+
+message DroneIdentity {
+  string drone_id = 1;
+  string swarm_group = 2;
+}
+
+message HiveCommand {
+  string command_name = 1; // e.g., "TAKEOFF", "SCAN_SECTOR"
+  map<string, string> parameters = 2; // args like altitude="50m"
+}
+
+message DroneTelemetry {
+  string drone_id = 1;
+  double battery_level = 2;
+  string status = 3;
+}
+
+message ServerAck {
+  bool success = 1;
+}

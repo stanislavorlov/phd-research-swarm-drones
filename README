@@ -1,0 +1,88 @@
+-----
+Бортові комп'ютери, що використовуються у дронах:
+- Raspberry Pi (найпопулярніший, дешевий, але слабкий)
+- Nvidia Jetson (найпопулярніший, дорогий, але потужний та енергозатратний)
+- Intel NUC (найпотужніший, найдорожчий, але найменш енергозатратний, не для реальних польотів)
+- MCU + AI (прості алгоритми Boids, micro-swarm)
+
+Бортові комп'ютери та їх роль у дроні:
+- PI - логіка польоту
+- Jetson - AI та комп'ютерний зір
+- FC - польотний контролер (ArduPilot, PX4)
+- ROS2 - комунікація між усіма компонентами
+
+Jetson Orin Nano - підхлодить для бортових комп'ютерів дронів, оскільки має потужний GPU та достатньо оперативної пам'яті для запуску AI моделей та комп'ютерного зору.
+
+На Jetson Orin Nano у ройаї дронів зазвичай запускають: 
+- ROS2: для розподіленої логіки та обміну даними
+- MAVROS / MAVLink: для комунікації з польотним контролером
+- Neural Network: для комп'ютерного зору, сегментації зображень, розпізнавання об'єктів
+- Mash-мережі та DDS-протоколи: для комунікації між дронами та координації дій
+
+The "Swarm-Orchestrator" Bridge
+
+Concept: A lightweight communication bridge that allows high-performance .NET systems (like a central command server) to control and monitor Python-based drone swarms.
+
+The Problem: Researchers write swarm algorithms in Python/ROS, but industrial systems run on robust platforms like .NET/Java. Connecting them usually involves messy, ad-hoc socket code.
+
+Your Library: A gRPC-based "Command & Control" library.
+
+Python Client: Runs on the drone (Raspberry Pi/Nvidia Jetson). Exposes hooks like @drone.on_command("converge").
+
+C# Server SDK: Allows a .NET backend to broadcast commands to the swarm, handle telemetry ingestion, and manage "heartbeats."
+
+Why You: You are already researching swarms and know .NET distributed systems. This is basically "Enterprise-Grade Swarm Control."
+
+----
+1. The Architecture (Concept)
+Server (.NET/C#): Acts as the "Hive Mind." It streams commands down to drones (e.g., "Return to Base," "Update Formation").
+Client (Python/Jetson): The drone. It runs your library, which handles the network layer and exposes simple decorators for the hardware logic.
+Protocol: gRPC Bidirectional Streaming.
+
+https://gemini.google.com/app/60954765f66f3fc9
+
+Running Python on drones is the standard for research and advanced autonomous systems (like the swarm intelligence you are studying).
+However, you generally do not run Python directly on the flight controller (the tiny chip that keeps the drone stable). Instead, you use a Companion Computer architecture.
+You strap a small Linux computer to the drone and connect it to the Flight Controller via a USB or UART cable.
+
+The Flight Controller:
+    - Hardware: Pixhawk, Cube, Durandal.
+    - Software: ArduPilot or PX4 (Written in C/C++).
+The Companion Computer:
+    - Hardware: Raspberry Pi, Nvidia Jetson, Intel NUC.
+    - Software: Linux (Ubuntu, Debian, etc.) + Python.
+    Runs SwarmBridge library, processes camera images (OpenCV/YOLO), makes high-level decisions (Boids, flocking) and sends commands to the flight controller (gRPC).
+    The SwarmBridge script sends instructions to the Flight Controller using a protocol called MAVLink.
+The translation between Python and MavLink:
+    - DroneKit-Python (older, stable, but not as feature rich)
+    - MAVSDK-Python (newer, modern, async-friendly)
+    - ROS / ROS2 (Robot Operating System): The heavy-duty industrial standard. You write Python "Nodes" that publish commands
+
+The complete flow:
+    - Server (.NET): Sends GoTo(Lat: 50.45, Lon: 30.52) via gRPC.
+    - Companion (Jetson/Python):
+        - Your SwarmBridge client receives the gRPC command.
+        - It calls mavsdk.action.goto_location(50.45, 30.52).
+    - Connection (USB): MAVSDK translates this into MAVLink packets and sends them over the USB cable.
+    - Flight Controller (Pixhawk): Receives the packet, calculates the motor speeds, and physically moves the drone.
+
+NVIDIA Jetson is a full Linux computer that can run ROS2, MAVSDK, and your custom swarm intelligence algorithms.
+It can also run OpenCV for computer vision, YOLO for object detection, and Boids for swarm behavior.
+It can also run your custom swarm intelligence algorithms.
+It access the drone's hardware via USB.
+
+PX4 simulator - https://docs.px4.io/v1.15/uk/sim_jmavsim/index
+Ardu Pilot - https://ardupilot.org/dev/docs/setting-up-sitl-on-linux.html
+---
+Low-Level задачі (стабілізація польоту):
+    - Прошивка: Рекомендую PX4 Autopilot, краще інтегрується з ROS 2, який дозволяє компютеру компаньйону повністю керувати дроном.
+Middleware (Зв'язок):
+    - ROS 2 (Robot Operating System). Це обов'язковий стандарт для робототехніки та роїв. ROS 2 забезпечує комунікацію між процесами (камера, YOLO, розрахунок траекторії польоту, відправка команд до дрону).
+High-Level (обробка зображення, логіка рою):
+    - Python (C++) + PyTorch/TensorFlow
+    - MAVSDK-Python (для простого керування) або rclpy (для ROS 2)
+
+Agilicious - науковий проект RPG, він поєднує DJI та PX4/ArduPilot, 
+має потужний бортовий компютер NVIDIA Jetson 
+та використовує Model Predictive Control (MPC) 
+разом з Reinforcement Learning (RL)
