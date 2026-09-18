@@ -1,3 +1,6 @@
-numpy
-matplotlib
+numpy~=2.2.6
+matplotlib~=3.10.7
 opencv-python
+
+pandas~=2.3.3
+scipy~=1.18.1
