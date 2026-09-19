@@ -46,7 +46,7 @@ from scipy.stats import norm
 # Manuscript parameters.  Edit these to test your own configuration.
 # --------------------------------------------------------------------------
 BOX_A = (1000.0, 1000.0, 200.0)   # stated deployment volume, metres
-N_LIST = (30, 100)                # stated swarm sizes, N in {30, 100}
+N_LIST = [20, 50]                # stated swarm sizes, N in {30, 100}
 R_SWEEP = np.array([200, 250, 300, 350, 400, 450, 500, 600, 700])  # R_comm, m
 
 LAMBDA_CRIT_TABLE1 = 0.2          # Simulation Setup + Table 1
@@ -57,6 +57,7 @@ BOX_C   = (800.0, 800.0, 200.0)
 N_C     = 10
 RCOMM_C = 450.0
 SIGMA_C = 60.0                    # sigmoid width for the smooth-edge variant, m
+KAPPA_C = 1.0 / SIGMA_C           # channel decay steepness kappa in P_drop (m^-1)
 SWEEP_C = 300.0                   # +/- displacement of the moving UAV, m
 
 # Manuscript Table 2: (node dropout %, arm, CR mean, CR sd, MCR mean, MCR sd)
@@ -90,9 +91,9 @@ def fiedler_soft(P, r_comm, sigma):
     """lambda_2 of a Laplacian with smooth (sigmoid) edge weights.
 
     w_ij = 1 / (1 + exp((d_ij - r_comm) / sigma)).  This is the same functional
-    form as the manuscript's packet-drop model P_drop(d_ij), so the weights can
-    be read as link reliability.  Unlike fiedler_binary this is differentiable
-    in the agent positions.
+    form as the manuscript's packet-drop model P_drop(d_ij), where link reliability
+    w_ij = 1 - P_drop(d_ij) with channel decay steepness kappa = 1 / sigma.
+    Unlike fiedler_binary this is differentiable in the agent positions.
     """
     D = np.linalg.norm(P[:, None, :] - P[None, :, :], axis=-1)
     A = 1.0 / (1.0 + np.exp((D - r_comm) / sigma))
@@ -256,6 +257,7 @@ def print_report(sweep, trans_stats, lam_crit_a=LAMBDA_CRIT_TABLE1,
     print("C  lambda_2 along a translation of one UAV "
           f"(N={N_C}, R_comm={RCOMM_C:.0f} m)")
     print("=" * 78)
+    print(f"  channel decay κ  : {KAPPA_C:.5f} m^-1  (1/σ with σ = {SIGMA_C:.1f} m)")
     print(f"  binary adjacency : {trans_stats['n_jumps']} discontinuities, "
           f"max single jump {trans_stats['max_jump']:.4f}")
     print(f"  spatial step     : {trans_stats['step_m']:.2f} m")
