@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MavLink UAV Swarm Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: rgba(30, 41, 59, 0.75);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-color: #38bdf8;
+            --alert-color: #fb7185;
+            --success-color: #10b981;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(56, 189, 248, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08), transparent 25%);
+        }
+
+        /* Sidebar GCS Panel */
+        #gcs-panel {
+            width: 480px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: 4px 0 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: rgba(15, 23, 42, 0.4);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--success-color);
+            box-shadow: 0 0 12px var(--success-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+            70% { opacity: 1; box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { opacity: 0.5; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stat-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 16px;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .stat-card:hover {
+            background: rgba(15, 23, 42, 0.8);
+            transform: translateY(-2px);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            text-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+        }
+
+        /* Terminal Log */
+        .log-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 24px;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .log-header h3 {
+            margin: 0;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        #mavlink-log {
+            flex: 1;
+            overflow-y: auto;
+            font-family: 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
+            font-size: 0.75rem;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+            color: #a3e635;
+            box-shadow: inset 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        #mavlink-log::-webkit-scrollbar { width: 6px; }
+        #mavlink-log::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+        .log-entry { margin-bottom: 6px; line-height: 1.5; word-break: break-all; }
+        .log-sysid { color: #f472b6; font-weight: 600; }
+        .log-msgid { color: #38bdf8; }
+
+        /* Canvas Area */
+        #simulation-area {
+            flex: 1;
+            position: relative;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .overlay-ui {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .control-group label {
+            font-size: 0.75rem;
+            color: var(--text-primary);
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .val-display {
+            color: var(--text-secondary);
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 180px;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent-color);
+        }
+        
+        .grid-lines {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-size: 50px 50px;
+            background-image: 
+                linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="gcs-panel">
+        <div class="header">
+            <div class="status-indicator"></div>
+            <h1>Swarm Ground Control</h1>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Active UAVs</div>
+                <div class="stat-value" id="stat-uavs">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">MavLink Msgs/s</div>
+                <div class="stat-value" id="stat-msgs">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Avg Swarm Spd</div>
+                <div class="stat-value" id="stat-speed">0.0 m/s</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Network Link</div>
+                <div class="stat-value" id="stat-load" style="color: var(--success-color); text-shadow: 0 0 16px rgba(16, 185, 129, 0.4);">Stable</div>
+            </div>
+        </div>
+
+        <div class="log-container">
+            <div class="log-header">
+                <h3>Telemetry Stream (MAVLink v2)</h3>
+                <span style="font-size: 11px; color: var(--success-color); font-weight: 500;">● UDP 14550</span>
+            </div>
+            <div id="mavlink-log"></div>
+        </div>
+    </div>
+
+    <div id="simulation-area">
+        <div class="grid-lines"></div>
+        <canvas id="swarmCanvas"></canvas>
+        <div class="overlay-ui">
+            <div style="font-size: 0.875rem; font-weight: 600; margin-bottom: 8px;">Swarm Behavior Rules</div>
+            <div class="control-group">
+                <label>Separation <span class="val-display" id="val-sep">0.05</span></label>
+                <input type="range" id="param-separation" min="0" max="0.1" step="0.005" value="0.05">
+            </div>
+            <div class="control-group">
+                <label>Alignment <span class="val-display" id="val-ali">0.05</span></label>
+                <input type="range" id="param-alignment" min="0" max="0.1" step="0.005" value="0.05">
+            </div>
+            <div class="control-group">
+                <label>Cohesion <span class="val-display" id="val-coh">0.01</span></label>
+                <input type="range" id="param-cohesion" min="0" max="0.05" step="0.001" value="0.01">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // -- Boids Algorithm & Simulation --
+        const canvas = document.getElementById('swarmCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        function resize() {
+            width = canvas.parentElement.clientWidth;
+            height = canvas.parentElement.clientHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        const NUM_UAVS = 70;
+        const boids = [];
+        
+        // Settings based on the Python script
+        let separationFactor = 0.05;
+        let alignmentFactor = 0.05;
+        let cohesionFactor = 0.01;
+        
+        const visualRange = 80;
+        const protectedRange = 25;
+        const minSpeed = 2.0;
+        const maxSpeed = 5.0;
+
+        // UI Listeners
+        document.getElementById('param-separation').addEventListener('input', e => {
+            separationFactor = parseFloat(e.target.value);
+            document.getElementById('val-sep').innerText = separationFactor.toFixed(3);
+        });
+        document.getElementById('param-alignment').addEventListener('input', e => {
+            alignmentFactor = parseFloat(e.target.value);
+            document.getElementById('val-ali').innerText = alignmentFactor.toFixed(3);
+        });
+        document.getElementById('param-cohesion').addEventListener('input', e => {
+            cohesionFactor = parseFloat(e.target.value);
+            document.getElementById('val-coh').innerText = cohesionFactor.toFixed(3);
+        });
+
+        class Boid {
+            constructor(id) {
+                this.id = id;
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                const angle = Math.random() * 2 * Math.PI;
+                this.vx = Math.cos(angle) * (minSpeed + Math.random() * (maxSpeed - minSpeed));
+                this.vy = Math.sin(angle) * (minSpeed + Math.random() * (maxSpeed - minSpeed));
+            }
+
+            update() {
+                let close_dx = 0, close_dy = 0;
+                let x_avg = 0, y_avg = 0;
+                let vx_avg = 0, vy_avg = 0;
+                let neighbors = 0;
+
+                for (let other of boids) {
+                    if (this === other) continue;
+                    
+                    const dx = this.x - other.x;
+                    const dy = this.y - other.y;
+                    const distance = Math.sqrt(dx*dx + dy*dy);
+
+                    if (distance < protectedRange) {
+                        close_dx += dx;
+                        close_dy += dy;
+                    } else if (distance < visualRange) {
+                        x_avg += other.x;
+                        y_avg += other.y;
+                        vx_avg += other.vx;
+                        vy_avg += other.vy;
+                        neighbors++;
+                    }
+                }
+
+                // Apply rules
+                this.vx += close_dx * separationFactor;
+                this.vy += close_dy * separationFactor;
+
+                if (neighbors > 0) {
+                    x_avg = x_avg / neighbors;
+                    y_avg = y_avg / neighbors;
+                    vx_avg = vx_avg / neighbors;
+                    vy_avg = vy_avg / neighbors;
+
+                    this.vx += (x_avg - this.x) * cohesionFactor;
+                    this.vy += (y_avg - this.y) * cohesionFactor;
+                    this.vx += (vx_avg - this.vx) * alignmentFactor;
+                    this.vy += (vy_avg - this.vy) * alignmentFactor;
+                }
+
+                // Speed limits
+                const speed = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
+                if (speed > maxSpeed) {
+                    this.vx = (this.vx / speed) * maxSpeed;
+                    this.vy = (this.vy / speed) * maxSpeed;
+                }
+                if (speed < minSpeed && speed > 0) {
+                    this.vx = (this.vx / speed) * minSpeed;
+                    this.vy = (this.vy / speed) * minSpeed;
+                }
+
+                // Screen wrapping (toroidal space)
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                if (this.x < 0) this.x += width;
+                if (this.x > width) this.x -= width;
+                if (this.y < 0) this.y += height;
+                if (this.y > height) this.y -= height;
+            }
+
+            draw() {
+                const angle = Math.atan2(this.vy, this.vx);
+                
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(angle);
+                
+                // Draw UAV (triangle shape representing a drone)
+                ctx.beginPath();
+                ctx.moveTo(12, 0);
+                ctx.lineTo(-8, -7);
+                ctx.lineTo(-4, 0);
+                ctx.lineTo(-8, 7);
+                ctx.closePath();
+                
+                ctx.fillStyle = '#38bdf8';
+                ctx.shadowColor = '#38bdf8';
+                ctx.shadowBlur = 10;
+                ctx.fill();
+                
+                // Engine glow
+                ctx.beginPath();
+                ctx.arc(-6, 0, 3, 0, Math.PI*2);
+                ctx.fillStyle = '#fff';
+                ctx.shadowColor = '#fff';
+                ctx.shadowBlur = 8;
+                ctx.fill();
+                
+                ctx.restore();
+            }
+        }
+
+        // Initialize swarm
+        for(let i = 1; i <= NUM_UAVS; i++) {
+            boids.push(new Boid(i));
+        }
+
+        // -- MavLink Simulation Logic --
+        const mavlinkLog = document.getElementById('mavlink-log');
+        let msgCount = 0;
+        let lastMsgCount = 0;
+        const msgTypes = ['HEARTBEAT', 'GLOBAL_POSITION_INT', 'ATTITUDE', 'SYS_STATUS', 'LOCAL_POSITION_NED'];
+
+        function generateMavlinkMessage(boid) {
+            const type = msgTypes[Math.floor(Math.random() * msgTypes.length)];
+            const time = new Date().toISOString().substring(11, 23); // HH:mm:ss.sss
+            
+            let payload = "";
+            if (type === 'GLOBAL_POSITION_INT') {
+                const lat = Math.floor((boid.y / height) * 180 - 90) * 1e7;
+                const lon = Math.floor((boid.x / width) * 360 - 180) * 1e7;
+                payload = `lat:${lat}, lon:${lon}, alt:50000, vx:${Math.floor(boid.vx*100)}, vy:${Math.floor(boid.vy*100)}`;
+            } else if (type === 'ATTITUDE') {
+                const yaw = (Math.atan2(boid.vy, boid.vx)).toFixed(3);
+                payload = `roll:0.000, pitch:0.125, yaw:${yaw}`;
+            } else if (type === 'HEARTBEAT') {
+                payload = `type:2(QUADROTOR), autopilot:3(ARDUPILOTMEGA), mode:81, state:4(ACTIVE)`;
+            } else if (type === 'SYS_STATUS') {
+                payload = `battery: ${90 + Math.floor(Math.random()*10)}%, drop_rate: 0%, cpu: ${Math.floor(Math.random()*20+10)}%`;
+            } else if (type === 'LOCAL_POSITION_NED') {
+                payload = `x:${boid.x.toFixed(2)}, y:${boid.y.toFixed(2)}, z:-50.00`;
+            }
+
+            return `<div class="log-entry">[${time}] <span class="log-sysid">SYS:${boid.id.toString().padStart(2, '0')}</span> | <span class="log-msgid">${type.padEnd(20, '\u00A0')}</span> | ${payload}</div>`;
+        }
+
+        function simulateNetwork() {
+            // Pick a few random drones to send a message
+            const activeTransmitters = Math.floor(Math.random() * 8) + 2;
+            let logHTML = "";
+            for(let i=0; i<activeTransmitters; i++) {
+                const boid = boids[Math.floor(Math.random() * boids.length)];
+                logHTML += generateMavlinkMessage(boid);
+                msgCount++;
+            }
+            
+            mavlinkLog.insertAdjacentHTML('beforeend', logHTML);
+            
+            // Keep log size manageable
+            while (mavlinkLog.childElementCount > 80) {
+                mavlinkLog.removeChild(mavlinkLog.firstChild);
+            }
+            mavlinkLog.scrollTop = mavlinkLog.scrollHeight;
+        }
+
+        // Stats updates
+        setInterval(() => {
+            const msgsPerSec = msgCount - lastMsgCount;
+            lastMsgCount = msgCount;
+            
+            let totalSpeed = 0;
+            boids.forEach(b => totalSpeed += Math.sqrt(b.vx*b.vx + b.vy*b.vy));
+            const avgSpeed = (totalSpeed / NUM_UAVS).toFixed(1);
+
+            document.getElementById('stat-uavs').innerText = NUM_UAVS;
+            document.getElementById('stat-msgs').innerText = msgsPerSec;
+            document.getElementById('stat-speed').innerText = avgSpeed + " m/s";
+            
+            const loadEl = document.getElementById('stat-load');
+            if (msgsPerSec > 150) {
+                loadEl.innerText = "Congested";
+                loadEl.style.color = "var(--alert-color)";
+                loadEl.style.textShadow = "0 0 16px rgba(251, 113, 133, 0.4)";
+            } else {
+                loadEl.innerText = "Stable";
+                loadEl.style.color = "var(--success-color)";
+                loadEl.style.textShadow = "0 0 16px rgba(16, 185, 129, 0.4)";
+            }
+            
+        }, 1000);
+
+        // Network simulation tick (approx 10Hz)
+        setInterval(simulateNetwork, 100);
+
+        // Animation Loop
+        function animate() {
+            // Draw background with slight trail effect
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.35)'; // slight transparency for trails
+            ctx.fillRect(0, 0, width, height);
+
+            for (let boid of boids) {
+                boid.update();
+                boid.draw();
+            }
+            
+            requestAnimationFrame(animate);
+        }
+
+        // Start simulation
+        animate();
+    </script>
+</body>
+</html>
