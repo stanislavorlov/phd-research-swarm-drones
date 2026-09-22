@@ -35,11 +35,28 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import GATv2Conv
+from torch_geometric.nn import GATv2Conv, MessagePassing
 
 from .config import Config
 from .env import EDGE_FEAT_DIM, NODE_FEAT_DIM
 
+
+class IsotropicConv(MessagePassing):
+    """DGN-style isotropic mean-aggregation graph conv (no learned attention
+    weights, every neighbor contributes equally) — a deliberately simple
+    proxy for Jiang et al. 2020's DGN, not a literal reproduction."""
+
+    def __init__(self, in_channels, out_channels, edge_dim):
+        super().__init__(aggr="mean")
+        self.lin_msg = nn.Linear(in_channels + edge_dim, out_channels)
+        self.lin_self = nn.Linear(in_channels, out_channels)
+
+    def forward(self, x, edge_index, edge_attr):
+        out = self.propagate(edge_index, x=x, edge_attr=edge_attr)
+        return F.relu(out + self.lin_self(x))
+
+    def message(self, x_j, edge_attr):
+        return self.lin_msg(torch.cat([x_j, edge_attr], dim=-1))
 
 class PITGATActor(nn.Module):
     def __init__(self, cfg: Config):
@@ -58,10 +75,23 @@ class PITGATActor(nn.Module):
         self._decay_raw = nn.Parameter(torch.tensor(float(cfg.decay_rate_init)))
 
         self.input_proj = nn.Linear(NODE_FEAT_DIM, cfg.embed_dim)
-        self.gat_layers = nn.ModuleList([
-            GATv2Conv(cfg.embed_dim, per_head, heads=heads, edge_dim=8, concat=True)
-            for _ in range(cfg.gat_layers)
-        ])
+        self.use_graph = cfg.use_graph
+        self.aggregator = cfg.aggregator
+        if self.use_graph:
+            if self.aggregator == "attention":
+                self.gat_layers = nn.ModuleList([
+                    GATv2Conv(cfg.embed_dim, per_head, heads=cfg.gat_heads, edge_dim=8, concat=True)
+                    for _ in range(cfg.gat_layers)
+                ])
+            elif self.aggregator == "conv":
+                self.gat_layers = nn.ModuleList([
+                    IsotropicConv(cfg.embed_dim, cfg.embed_dim, edge_dim=8)
+                    for _ in range(cfg.gat_layers)
+                ])
+            else:
+                raise ValueError(f"Unknown aggregator: {self.aggregator!r}")
+        else:
+            self.gat_layers = None  # Vanilla MAPPO: no cross-agent communication at all
         self.gru = nn.GRUCell(cfg.embed_dim, cfg.gru_hidden)
         self.policy_mean = nn.Linear(cfg.gru_hidden, 3)
         self.log_std = nn.Parameter(torch.zeros(3) - 0.5)  # state-independent std, std(0) ~= 0.6
@@ -101,12 +131,16 @@ class PITGATActor(nn.Module):
         hidden:     (n, gru_hidden) previous GRU state for these n agents
         Returns: action_mean (n, 3), log_std (3,), new_hidden (n, gru_hidden)
         """
-        eff_edge_attr = self._effective_edge_features(edge_attr)
         x = F.elu(self.input_proj(node_feats))
-        for i, layer in enumerate(self.gat_layers):
-            x = layer(x, edge_index, edge_attr=eff_edge_attr)
-            if i < len(self.gat_layers) - 1:
-                x = F.elu(x)
+        if self.use_graph:
+            eff_edge_attr = self._effective_edge_features(edge_attr)
+            for i, layer in enumerate(self.gat_layers):
+                x = layer(x, edge_index, edge_attr=eff_edge_attr)
+                if i < len(self.gat_layers) - 1:
+                    x = F.elu(x)
+        # else: x is the raw per-agent embedding, untouched by any neighbor --
+        # this is what makes use_graph=False equivalent to Vanilla MAPPO
+        # (no cross-agent communication at all).
         spatial_message = x  # (n, embed_dim)
 
         new_hidden = self.gru(spatial_message, hidden)

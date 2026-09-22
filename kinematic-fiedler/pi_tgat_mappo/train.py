@@ -19,6 +19,8 @@ paper-value -> used-value mapping table.
 
 from __future__ import annotations
 import argparse
+import dataclasses
+import json
 import os
 import time
 
@@ -47,9 +49,27 @@ def parse_args():
                     help="channel decay steepness; Table 1 says 0.02, body text says 0.01667")
     p.add_argument("--no-kinematic-prior", action="store_true",
                     help="disable the kinematic-prior/temporal-decay mechanism -> memoryless-GAT baseline")
+    p.add_argument("--aggregator", type=str, default=None, choices=["attention", "conv"],
+                    help="graph aggregation when --no-graph is not set: 'attention' (GATv2Conv, default) "
+                         "or 'conv' (isotropic mean aggregation, DGN-lite)")
+    p.add_argument("--no-graph", action="store_true",
+                    help="disable cross-agent communication entirely -> Vanilla MAPPO baseline")
+    p.add_argument("--n-epochs", type=int, default=None)
+    p.add_argument("--n-waypoints", type=int, default=None)
+    p.add_argument("--waypoint-radius", type=float, default=None)
+    p.add_argument("--r-comm", type=float, default=None)
+    p.add_argument("--box-size", type=float, nargs=3, default=None, metavar=("X", "Y", "Z"))
     p.add_argument("--seed", type=int, default=None)
     p.add_argument("--device", type=str, default=None, help="'auto' (default), 'cpu', 'mps', or 'cuda'")
+    p.add_argument("--run-name", type=str, default="default",
+                    help="results go to results/<run-name>/ -- MUST be unique per concurrently "
+                         "running process, or they will silently overwrite each other's "
+                         "checkpoint/heartbeat/history/config")
     p.add_argument("--log-every", type=int, default=5)
+    p.add_argument("--save-every", type=int, default=10,
+                    help="write a heartbeat file every iteration, and a full checkpoint "
+                         "+ plot + history snapshot every N iterations, so you can tell "
+                         "a remote run is alive without waiting for it to finish")
     return p.parse_args()
 
 
@@ -64,17 +84,26 @@ def build_config(args) -> Config:
         ("n_min", args.n_min), ("n_max", args.n_max), ("max_steps", args.max_steps),
         ("iterations", args.iterations), ("episodes_per_iter", args.episodes_per_iter),
         ("kappa", args.kappa), ("seed", args.seed), ("device", args.device),
+        ("n_epochs", args.n_epochs), ("n_waypoints", args.n_waypoints),
+        ("waypoint_radius", args.waypoint_radius), ("r_comm", args.r_comm),
+        ("aggregator", args.aggregator),
     ]:
         if val is not None:
             setattr(cfg, field, val)
+    if args.box_size is not None:
+        cfg.box_size = tuple(args.box_size)
     if args.no_kinematic_prior:
         cfg.use_kinematic_prior = False
+    if args.no_graph:
+        cfg.use_graph = False
     return cfg
 
 
 def main():
+    global RESULTS_DIR
     args = parse_args()
     cfg = build_config(args)
+    RESULTS_DIR = os.path.join(os.path.dirname(__file__), "results", args.run_name)
     os.makedirs(RESULTS_DIR, exist_ok=True)
 
     np.random.seed(cfg.seed)
@@ -82,6 +111,12 @@ def main():
     trainer = MAPPOTrainer(cfg)
     print(f"device = {trainer.device}, kinematic_prior = {cfg.use_kinematic_prior}, "
           f"N in [{cfg.n_min}, {cfg.n_max}], max_steps = {cfg.max_steps}")
+
+    # Persist the exact config this run used alongside its checkpoint, so
+    # evaluate.py (or you, months later) can reconstruct a matching network
+    # without having to remember which flags produced this checkpoint.
+    with open(os.path.join(RESULTS_DIR, "config.json"), "w") as f:
+        json.dump(dataclasses.asdict(cfg), f, indent=2)
 
     history = {k: [] for k in [
         "iteration", "episode_return", "connectivity_ratio", "mission_complete",
@@ -108,8 +143,8 @@ def main():
         for k in ("policy_loss", "value_loss", "entropy", "w_align", "w_cohesion", "w_separation", "decay_rate"):
             history[k].append(update_stats[k])
 
+        elapsed = time.time() - t0
         if it % args.log_every == 0 or it == 1:
-            elapsed = time.time() - t0
             print(
                 f"iter {it:4d}/{cfg.iterations} | return {history['episode_return'][-1]:7.3f} | "
                 f"CR {history['connectivity_ratio'][-1]:5.2f} | "
@@ -120,10 +155,31 @@ def main():
                 f"elapsed {elapsed:6.1f}s"
             )
 
-    ckpt_path = os.path.join(RESULTS_DIR, "pi_tgat_mappo.pt")
-    trainer.save(ckpt_path)
-    np.savez(os.path.join(RESULTS_DIR, "training_history.npz"), **{k: np.array(v) for k, v in history.items()})
-    plot_learning_curve(history)
+        # Cheap per-iteration liveness signal: a single small text file whose
+        # mtime and contents change every iteration. `watch -n 5 cat
+        # results/heartbeat.txt` (or just repeated `cat`) is the fastest way
+        # to confirm a remote run is actually progressing, independent of
+        # whatever is or isn't reaching stdout/your SSH session.
+        with open(os.path.join(RESULTS_DIR, "heartbeat.txt"), "w") as f:
+            f.write(
+                f"iteration {it}/{cfg.iterations}\n"
+                f"elapsed_seconds {elapsed:.1f}\n"
+                f"episode_return {history['episode_return'][-1]:.4f}\n"
+                f"connectivity_ratio {history['connectivity_ratio'][-1]:.4f}\n"
+                f"mission_complete {history['mission_complete'][-1]:.4f}\n"
+                f"updated_at {time.strftime('%Y-%m-%d %H:%M:%S')}\n"
+            )
+
+        # Periodic full snapshot (checkpoint + history + plot) so a crashed,
+        # killed, or still-running job never loses more than `save_every`
+        # iterations of progress -- and so you can eyeball the learning
+        # curve mid-run instead of only at the very end.
+        if it % args.save_every == 0 or it == cfg.iterations:
+            trainer.save(os.path.join(RESULTS_DIR, "pi_tgat_mappo.pt"))
+            np.savez(os.path.join(RESULTS_DIR, "training_history.npz"),
+                     **{k: np.array(v) for k, v in history.items()})
+            plot_learning_curve(history)
+
     print(f"\nDone. Results written to {RESULTS_DIR}")
 
 

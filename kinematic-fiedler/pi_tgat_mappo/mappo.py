@@ -37,7 +37,11 @@ class MAPPOTrainer:
 
     # ------------------------------------------------------------------
     @torch.no_grad()
-    def collect_episode(self, env: UAVSwarmEnv, n_agents: int | None = None) -> tuple[EpisodeBuffer, dict]:
+    def collect_episode(self, env: UAVSwarmEnv, n_agents: int | None = None,
+                         deterministic: bool = False) -> tuple[EpisodeBuffer, dict]:
+        """deterministic=True uses the raw policy mean (no sampling noise) --
+        this is what evaluate.py uses to measure a fixed policy's CR/MCR
+        under a stress test, as opposed to train.py's exploring rollouts."""
         cfg = self.cfg
         graph = env.reset(n_agents=n_agents)
         hidden = self.actor.init_hidden(env.n, self.device)
@@ -54,7 +58,7 @@ class MAPPOTrainer:
             mean, log_std, hidden = self.actor(node_feats, edge_index, edge_attr, hidden)
             std = log_std.exp().expand_as(mean)
             dist = Normal(mean, std)
-            action = dist.sample()
+            action = mean if deterministic else dist.sample()
             logprob = dist.log_prob(action).sum(dim=-1)  # (n,)
             value = self.critic(node_feats)               # (1,)
 

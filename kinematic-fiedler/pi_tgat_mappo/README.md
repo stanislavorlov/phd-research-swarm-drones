@@ -129,6 +129,62 @@ actually uses. "Unchanged" means the paper's number is used exactly.
   baseline* architecture. This was included because it's nearly free
   given the edge-schema design, and is the natural first ablation to run.
 
+## Evaluating a trained checkpoint (Table 1's CR / MCR protocol)
+
+`train.py` trains under organic, distance-based RF dropout throughout.
+The paper's headline numbers (Table 1: CR and MCR at 0% / 15% / 30% node
+dropout) are an EVALUATION-time stress test on top of that: a fixed
+fraction of agents forced silent each step, independent of geometry. That
+condition is not exercised during training at all -- it needs a separate
+pass over a frozen policy, which `evaluate.py` does.
+
+```bash
+# Train two configurations into separate results directories so their
+# checkpoints (and the config.json train.py saves alongside each one)
+# don't overwrite each other:
+python3 -m pi_tgat_mappo.train --n-min 20 --n-max 50 --iterations 300
+mv pi_tgat_mappo/results pi_tgat_mappo/results_pi_tgat
+
+python3 -m pi_tgat_mappo.train --n-min 20 --n-max 50 --iterations 300 --no-kinematic-prior
+mv pi_tgat_mappo/results pi_tgat_mappo/results_baseline
+
+# Evaluate each at 0/15/30% node dropout (20 held-out episodes per rate;
+# --seed defaults to 123, different from training's default seed 42, so
+# these are genuinely unseen episodes, not replays of training data):
+python3 -m pi_tgat_mappo.evaluate \
+    --checkpoint pi_tgat_mappo/results_pi_tgat/pi_tgat_mappo.pt --label "PI-TGAT (ours)"
+python3 -m pi_tgat_mappo.evaluate \
+    --checkpoint pi_tgat_mappo/results_baseline/pi_tgat_mappo.pt --label "Memoryless GNN"
+```
+
+Each invocation prints a CR/MCR table for that one checkpoint, appends its
+rows to `pi_tgat_mappo/results/evaluation_table.json` (keyed by label +
+dropout rate, so re-running a label overwrites just its own rows), and
+regenerates `pi_tgat_mappo/results/evaluation_comparison.png` -- a grouped
+bar chart across every label/rate evaluated so far, in the same shape as
+the paper's Table 1. Run `python3 -m pi_tgat_mappo.evaluate --summarize`
+with no `--checkpoint` needed to just rebuild the table/plot from what's
+already been evaluated.
+
+`evaluate.py` uses the DETERMINISTIC policy mean (no exploration sampling)
+by default -- pass `--stochastic` to sample instead. It also auto-loads
+the exact `Config` a checkpoint was trained with from that checkpoint's
+`config.json` (written automatically by `train.py`), so a baseline
+checkpoint's `--no-kinematic-prior` architecture is reconstructed
+correctly without you having to remember or re-specify it -- just keep
+each checkpoint and its `config.json` together in the same directory, as
+the `mv ... results_*` step above does. You can override `--n-min`/
+`--n-max` at eval time to test zero-shot transfer to a swarm size the
+checkpoint wasn't trained on (the paper's Table 2 experiment).
+
+**If you're running this on a remote GPU instance** (e.g. via the
+`deploy/` scripts), re-sync after pulling these changes -- `evaluate.py`
+is new and `mappo.py`/`env.py`/`config.py`/`train.py` all changed to
+support it:
+```bash
+./deploy/deploy_vastai.sh <HOST> <PORT>
+```
+
 ## Adding the baselines later
 
 The env/graph layer is already baseline-agnostic:

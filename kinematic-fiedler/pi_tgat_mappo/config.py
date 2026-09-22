@@ -105,6 +105,38 @@ class Config:
                                          # (matches the paper's stated baseline architecture:
                                          # dropped neighbors are masked out, no decay/caching).
 
+    # ---------------------------------------------------------------
+    # Baseline toggles (NOT Table 1 rows). These, plus use_kinematic_prior
+    # above, let ONE codebase produce all four architectures the paper
+    # compares, as combinations of two independent axes -- aggregator type
+    # and whether cross-agent communication happens at all -- rather than
+    # four separately-written models:
+    #   PI-TGAT (ours):  use_kinematic_prior=True,  aggregator=attention, use_graph=True  (default)
+    #   TarMAC-lite:      use_kinematic_prior=False, aggregator=attention, use_graph=True  (--no-kinematic-prior)
+    #   DGN-lite:         use_kinematic_prior=False, aggregator=conv,      use_graph=True  (--aggregator conv --no-kinematic-prior)
+    #   Vanilla MAPPO:    use_graph=False (--no-graph; aggregator/kinematic-prior irrelevant, no graph at all)
+    # See networks.py and README.md ("Baselines, combined") for the honest
+    # caveats on how close each is to the paper's actual cited method.
+    # ---------------------------------------------------------------
+    aggregator: str = "attention"       # "attention" (GATv2Conv, learned/anisotropic) or
+                                         # "conv" (isotropic mean aggregation, DGN-style)
+    use_graph: bool = True              # False -> no cross-agent communication at all
+                                         # (plain per-agent MLP+GRU -> Vanilla MAPPO baseline)
+
+    # ---------------------------------------------------------------
+    # Evaluation-only: forced NODE dropout (not a Table 1 training row).
+    # The paper trains under organic, distance-based RF link dropout
+    # (governed by r_comm/kappa above), but EVALUATES trained policies
+    # under an additional, independent "simultaneous node dropout" stress
+    # test -- Table 1's caption and Model Architecture section both
+    # describe evaluation at up to 30% simultaneous node dropout. This
+    # field defaults to 0 (no effect during training); evaluate.py sets it
+    # per dropout level it's testing. When > 0, each step every agent has
+    # this probability of going silent entirely (no outgoing packets that
+    # step, regardless of distance to its listeners).
+    # ---------------------------------------------------------------
+    node_dropout_rate: float = 0.0
+
     device: str = "auto"                # "auto" picks mps > cuda > cpu
 
     def resolve_device(self):

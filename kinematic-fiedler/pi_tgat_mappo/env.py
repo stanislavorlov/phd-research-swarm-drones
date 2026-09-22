@@ -123,6 +123,16 @@ class UAVSwarmEnv:
         link_up = self.rng.uniform(size=p_drop.shape) >= p_drop
         np.fill_diagonal(link_up, False)
 
+        # Evaluation-only stress test (see config.node_dropout_rate): on top of
+        # the organic, distance-based RF link dropout above, independently
+        # silence a fraction of AGENTS entirely this step -- every link
+        # originating from a silenced agent fails, regardless of distance.
+        # This is the paper's "simultaneous node dropout" evaluation
+        # condition (Table 1: 0% / 15% / 30%), distinct from per-link RF drop.
+        if cfg.node_dropout_rate > 0.0:
+            silenced = self.rng.uniform(size=self.n) < cfg.node_dropout_rate
+            link_up[:, silenced] = False
+
         # Update the temporal cache for links that ARE up this step (i receives from j).
         ii, jj = np.where(link_up)
         self.last_seen_pos[ii, jj] = self.pos[jj]
