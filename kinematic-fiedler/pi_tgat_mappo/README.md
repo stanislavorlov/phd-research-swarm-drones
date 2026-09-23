@@ -8,11 +8,14 @@ for bridging communication blackouts, trained with MAPPO under a
 Fiedler-value (algebraic connectivity) reward penalty.
 
 Requires `torch` + `torch_geometric` (MPS-accelerated on Apple Silicon --
-see the setup notes you were given separately). This is the **main
-architecture only** (PI-TGAT); the three literature baselines the paper
-compares against (Vanilla MAPPO, TarMAC, DGN) are not implemented here --
-see "Adding the baselines later" below for how this code is already
-structured to make that cheap.
+see the setup notes you were given separately). All four architectures the
+paper compares -- PI-TGAT (ours), TarMAC-lite, DGN-lite, and Vanilla
+MAPPO -- share this one codebase, selected via CLI flags at train time; see
+"Baselines, combined" below for exactly what each flag combination gives
+you and the honest caveats on how close each "-lite" baseline actually is
+to its cited paper. See "Pilot run results & known limitations" for what a
+first reduced-scale run of all four actually showed, and what it means for
+interpreting any comparison this code produces.
 
 ## Quick start
 
@@ -185,24 +188,102 @@ support it:
 ./deploy/deploy_vastai.sh <HOST> <PORT>
 ```
 
-## Adding the baselines later
+## Pilot run results & known limitations (2026-09-22)
 
-The env/graph layer is already baseline-agnostic:
-- **Memoryless GAT baseline**: already available via `--no-kinematic-prior`.
-- **DGN** (Jiang et al., 2020): swap `GATv2Conv` for a plain graph-
-  convolution aggregator (isotropic neighbor averaging instead of learned
-  attention) in `networks.py`; drop the GRU (DGN is memoryless).
-- **TarMAC** (Das et al., 2020): replace the distance-gated edge set with
-  a learned "who-to-address" attention/gating network that decides which
-  neighbors to listen to, independent of physical range.
-- **Vanilla MAPPO** (Yu et al., 2022): replace `PITGATActor` with a plain
-  per-agent MLP over local features only (no graph, no neighbor
-  information at all) -- structurally close to the boids-MARL experiment
-  already in this repository's `marl/` folder.
+A first end-to-end run of all four architectures (PI-TGAT, TarMAC-lite,
+DGN-lite, Vanilla MAPPO) was completed at a deliberately reduced scale to
+fit a compute/time budget far below the paper's own (8-15 agents instead
+of 20-50, a 200x200x40 m box instead of 1000x1000x200 m with `r_comm`/
+`kappa` scaled proportionally, 600-step episodes, 150 training iterations).
+Two things worth knowing before trusting any comparison from this run, or
+a similarly-scaled one:
 
-All four would then share `env.py`, `buffer.py`, and the MAPPO update loop
-in `mappo.py`, so the actual comparison script mainly swaps the actor
-class and re-runs `train.py`.
+**A real code bug was found and fixed**: `connectivity_ratio` (CR) was
+originally computed from `fiedler_value()`, which recomputes edge weights
+from distance alone via a sigmoid that is never exactly zero -- meaning
+the graph was *structurally* almost always "connected" by construction,
+completely independent of the evaluation's forced node-dropout stress
+test. This produced CR = 100.0% +/- 0.0% at every dropout rate for every
+architecture, which is meaningless, not a real robustness result. Fixed
+by adding `env.py`'s `is_graph_connected()`, a hard topological check on
+the actually-realized `link_up` adjacency (which does reflect node
+dropout), used for the `connected` info field that CR is averaged from.
+`fiedler_value()` itself (used only for the training reward, `r_conn`)
+was left untouched, so existing checkpoints remain valid -- only
+`evaluate.py`'s measurement needed correcting, not retraining.
+
+**Mission completion never emerged (MCR = 0.0% for all four,
+all dropout rates)**, and `mission_progress` stayed flat near 0.01-0.04
+across training with no upward trend. The likely cause: `omega = 2.5`
+weights the spectral-connectivity reward term heavily relative to the
+task-progress term, and at this compressed box scale a tightly-clustered,
+stationary swarm is *already* fully connected almost for free -- so PPO
+converged toward a connectivity-preserving, low-mobility local optimum
+rather than active waypoint-seeking. This is consistent across all four
+architectures (not specific to one), so it doesn't bias an architecture
+comparison against any single baseline, but it does mean the CR-vs-dropout
+numbers below should **not** be read as "robustness while performing the
+mission" -- none of the four were meaningfully performing it.
+
+That confound shows up directly in the corrected results:
+
+```
+            0% dropout: Vanilla 46.1%  |  PI-TGAT 44.8%  |  TarMAC-lite 37.9%  |  DGN-lite 33.5%
+           15% dropout: Vanilla 28.3%  |  PI-TGAT 23.4%  |  TarMAC-lite 21.8%  |  DGN-lite 13.7%
+           30% dropout: Vanilla 21.3%  |  PI-TGAT 16.1%  |  TarMAC-lite 17.2%  |  DGN-lite 13.9%
+   (n = 20 episodes per cell; standard deviations are roughly as large as
+   the means themselves -- e.g. 44.8% +/- 33.7% -- so none of these
+   architecture-to-architecture differences would survive a real
+   significance test at this n.)
+```
+
+Vanilla MAPPO -- the architecture with **no** cross-agent communication
+mechanism at all -- has the *highest* CR at every dropout level. That is
+the opposite of what the paper's core claim would predict, and it is best
+explained by the same clustering-optimum above: with no reason to ever
+coordinate movement, a non-communicating policy has no reason to spread
+out either, so it stays maximally (and trivially) connected. In this
+regime, CR is measuring "how tightly does each policy happen to cluster
+by default," not "how well does its communication mechanism preserve
+connectivity while navigating," which is what the paper's robustness
+claim is actually about.
+
+**Conclusion**: this pilot validates the pipeline end-to-end -- environment,
+all four architectures sharing one codebase, the node-dropout evaluation
+harness, and a now-correct hard-topology CR metric -- but does **not**
+support ranking the four architectures on robustness. The next run should
+lower `omega` (or add a stronger progress-shaping term) so `mission_progress`
+actually grows during training, then re-run this same evaluation pipeline;
+only once mission-seeking behavior emerges does a CR-vs-dropout comparison
+across architectures become a meaningful robustness result rather than a
+measurement of idle-clustering tendency.
+
+## Baselines, combined
+
+All four architectures the paper compares are combinations of two
+independent axes in `PITGATActor` (`networks.py`), controlled by
+`train.py` CLI flags, rather than four separately-written models:
+
+| Architecture     | flags                                        | aggregator  | graph? |
+|-------------------|----------------------------------------------|-------------|--------|
+| PI-TGAT (ours)    | *(default)*                                   | attention (GATv2Conv) | yes |
+| TarMAC-lite       | `--no-kinematic-prior`                        | attention (GATv2Conv) | yes |
+| DGN-lite          | `--no-kinematic-prior --aggregator conv`      | isotropic mean (`IsotropicConv`) | yes |
+| Vanilla MAPPO     | `--no-graph`                                  | n/a (no cross-agent communication at all) | no |
+
+**Honest caveat**: "TarMAC-lite" and "DGN-lite" are architectural
+*proxies* -- same actor/critic scaffolding, GRU, and reward as PI-TGAT,
+with only the neighbor-aggregation mechanism swapped -- not literal
+reproductions of Das et al. 2020 or Jiang et al. 2020. TarMAC's actual
+"who-to-address" learned gating and DGN's specific multi-hop convolution
+stack are not implemented; what's here isolates one architectural
+variable (attention vs. isotropic aggregation vs. no communication) while
+holding everything else fixed, which is useful for an ablation but should
+not be cited as a faithful reproduction of either paper's full method in
+a comparison table.
+
+All four share `env.py`, `buffer.py`, and the MAPPO update loop in
+`mappo.py` -- the CLI flags above are the entire "comparison script."
 
 ## Scaling up
 

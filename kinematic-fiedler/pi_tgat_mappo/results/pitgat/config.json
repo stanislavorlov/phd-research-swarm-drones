@@ -41,7 +41,7 @@
   "episodes_per_iter": 2,
   "use_kinematic_prior": true,
   "aggregator": "attention",
-  "use_graph": false,
+  "use_graph": true,
   "node_dropout_rate": 0.0,
   "device": "auto"
 }

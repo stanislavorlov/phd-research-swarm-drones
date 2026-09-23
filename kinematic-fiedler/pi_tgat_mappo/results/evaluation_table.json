@@ -1,0 +1,122 @@
+[
+  {
+    "label": "PI-TGAT",
+    "checkpoint": "pi_tgat_mappo/results/pitgat/pi_tgat_mappo.pt",
+    "dropout_pct": 0.0,
+    "n_episodes": 20,
+    "cr_mean": 0.44800000000000006,
+    "cr_std": 0.33662441979155344,
+    "mcr_mean": 0.0,
+    "mcr_std": 0.0
+  },
+  {
+    "label": "PI-TGAT",
+    "checkpoint": "pi_tgat_mappo/results/pitgat/pi_tgat_mappo.pt",
+    "dropout_pct": 15.0,
+    "n_episodes": 20,
+    "cr_mean": 0.23433333333333334,
+    "cr_std": 0.22708686541595582,
+    "mcr_mean": 0.0,
+    "mcr_std": 0.0
+  },
+  {
+    "label": "PI-TGAT",
+    "checkpoint": "pi_tgat_mappo/results/pitgat/pi_tgat_mappo.pt",
+    "dropout_pct": 30.0,
+    "n_episodes": 20,
+    "cr_mean": 0.16075,
+    "cr_std": 0.16318571135025545,
+    "mcr_mean": 0.0,
+    "mcr_std": 0.0
+  },
+  {
+    "label": "TarMAC-lite",
+    "checkpoint": "pi_tgat_mappo/results/tarmac/pi_tgat_mappo.pt",
+    "dropout_pct": 0.0,
+    "n_episodes": 20,
+    "cr_mean": 0.3789166666666667,
+    "cr_std": 0.33900355414393846,
+    "mcr_mean": 0.0,
+    "mcr_std": 0.0
+  },
+  {
+    "label": "TarMAC-lite",
+    "checkpoint": "pi_tgat_mappo/results/tarmac/pi_tgat_mappo.pt",
+    "dropout_pct": 15.0,
+    "n_episodes": 20,
+    "cr_mean": 0.21791666666666668,
+    "cr_std": 0.22730539601064373,
+    "mcr_mean": 0.0,
+    "mcr_std": 0.0
+  },
+  {
+    "label": "TarMAC-lite",
+    "checkpoint": "pi_tgat_mappo/results/tarmac/pi_tgat_mappo.pt",
+    "dropout_pct": 30.0,
+    "n_episodes": 20,
+    "cr_mean": 0.17183333333333334,
+    "cr_std": 0.16952458032195017,
+    "mcr_mean": 0.0,
+    "mcr_std": 0.0
+  },
+  {
+    "label": "DGN-lite",
+    "checkpoint": "pi_tgat_mappo/results/dgn/pi_tgat_mappo.pt",
+    "dropout_pct": 0.0,
+    "n_episodes": 20,
+    "cr_mean": 0.3348333333333333,
+    "cr_std": 0.32212570872599133,
+    "mcr_mean": 0.0,
+    "mcr_std": 0.0
+  },
+  {
+    "label": "DGN-lite",
+    "checkpoint": "pi_tgat_mappo/results/dgn/pi_tgat_mappo.pt",
+    "dropout_pct": 15.0,
+    "n_episodes": 20,
+    "cr_mean": 0.13666666666666666,
+    "cr_std": 0.15114746294779663,
+    "mcr_mean": 0.0,
+    "mcr_std": 0.0
+  },
+  {
+    "label": "DGN-lite",
+    "checkpoint": "pi_tgat_mappo/results/dgn/pi_tgat_mappo.pt",
+    "dropout_pct": 30.0,
+    "n_episodes": 20,
+    "cr_mean": 0.13899999999999998,
+    "cr_std": 0.14904827704099397,
+    "mcr_mean": 0.0,
+    "mcr_std": 0.0
+  },
+  {
+    "label": "Vanilla MAPPO",
+    "checkpoint": "pi_tgat_mappo/results/vanilla/pi_tgat_mappo.pt",
+    "dropout_pct": 0.0,
+    "n_episodes": 20,
+    "cr_mean": 0.46125,
+    "cr_std": 0.33555918297340304,
+    "mcr_mean": 0.0,
+    "mcr_std": 0.0
+  },
+  {
+    "label": "Vanilla MAPPO",
+    "checkpoint": "pi_tgat_mappo/results/vanilla/pi_tgat_mappo.pt",
+    "dropout_pct": 15.0,
+    "n_episodes": 20,
+    "cr_mean": 0.28325,
+    "cr_std": 0.2416473986571711,
+    "mcr_mean": 0.0,
+    "mcr_std": 0.0
+  },
+  {
+    "label": "Vanilla MAPPO",
+    "checkpoint": "pi_tgat_mappo/results/vanilla/pi_tgat_mappo.pt",
+    "dropout_pct": 30.0,
+    "n_episodes": 20,
+    "cr_mean": 0.21258333333333326,
+    "cr_std": 0.18040577334319308,
+    "mcr_mean": 0.0,
+    "mcr_std": 0.0
+  }
+]

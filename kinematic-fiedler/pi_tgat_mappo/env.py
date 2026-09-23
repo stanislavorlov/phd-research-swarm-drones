@@ -174,6 +174,12 @@ class UAVSwarmEnv:
             edge_index = np.zeros((2, 0), dtype=np.int64)
             edge_attr = np.zeros((0, EDGE_FEAT_DIM), dtype=np.float32)
 
+        # Cache the REALIZED adjacency (reflects both organic RF dropout AND
+        # the evaluation-only forced node_dropout_rate stress test) so
+        # is_graph_connected() below can use it, separately from
+        # fiedler_value()'s smooth distance-only reward-shaping signal.
+        self._last_link_up = link_up.copy()
+
         return dict(
             node_feats=node_feats,     # (n, 7)
             edge_index=edge_index,      # (2, E) src -> dst, "dst receives from src"
@@ -222,6 +228,24 @@ class UAVSwarmEnv:
         eigvals = np.linalg.eigvalsh(L)
         return float(max(eigvals[1], 0.0)) if len(eigvals) > 1 else 0.0
 
+    def is_graph_connected(self) -> bool:
+        """Hard topological connectivity check on the REALIZED link_up
+        adjacency from the most recent _build_graph() call. Unlike
+        fiedler_value() above (smooth, distance-only, used for reward
+        shaping -- and structurally almost always > 0 since its weights are
+        a sigmoid that never hits exactly zero), this reflects BOTH organic
+        RF dropout AND the evaluation-only forced node_dropout_rate stress
+        test, because it uses the actual sampled link_up matrix rather than
+        recomputing weights from distance alone. This is what
+        connectivity_ratio (CR) should be measured against."""
+        if self.n <= 1:
+            return True
+        from scipy.sparse.csgraph import connected_components
+        from scipy.sparse import csr_matrix
+        undirected = self._last_link_up | self._last_link_up.T
+        n_components, _ = connected_components(csr_matrix(undirected), directed=False)
+        return bool(n_components == 1)
+
     # ------------------------------------------------------------------
     def step(self, actions):
         """actions: (n, 3) float array in [-1, 1]^3, the manuscript's
@@ -252,7 +276,7 @@ class UAVSwarmEnv:
         done = self.t >= cfg.max_steps or bool(np.all(finished_now))
         info = dict(
             fiedler_value=lam2,
-            connected=lam2 > 0.0,
+            connected=self.is_graph_connected(),
             mission_progress=float(np.mean(self.wp_idx) / (cfg.n_waypoints - 1)),
             mission_complete=bool(np.all(finished_now)),
         )

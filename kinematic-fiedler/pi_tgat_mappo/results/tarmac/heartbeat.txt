@@ -1,0 +1,6 @@
+iteration 150/150
+elapsed_seconds 5656.6
+episode_return -376.3095
+connectivity_ratio 1.0000
+mission_complete 0.0000
+updated_at 2026-09-22 17:54:20
