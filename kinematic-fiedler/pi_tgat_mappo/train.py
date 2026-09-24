@@ -59,6 +59,11 @@ def parse_args():
     p.add_argument("--waypoint-radius", type=float, default=None)
     p.add_argument("--r-comm", type=float, default=None)
     p.add_argument("--box-size", type=float, nargs=3, default=None, metavar=("X", "Y", "Z"))
+    p.add_argument("--omega", type=float, default=None,
+                    help="spectral-connectivity reward weight; paper value is 2.5, but that can "
+                         "over-penalize movement at reduced box scales -- see README 'Pilot run "
+                         "results' section")
+    p.add_argument("--entropy-coef", type=float, default=None)
     p.add_argument("--seed", type=int, default=None)
     p.add_argument("--device", type=str, default=None, help="'auto' (default), 'cpu', 'mps', or 'cuda'")
     p.add_argument("--run-name", type=str, default="default",
@@ -86,7 +91,8 @@ def build_config(args) -> Config:
         ("kappa", args.kappa), ("seed", args.seed), ("device", args.device),
         ("n_epochs", args.n_epochs), ("n_waypoints", args.n_waypoints),
         ("waypoint_radius", args.waypoint_radius), ("r_comm", args.r_comm),
-        ("aggregator", args.aggregator),
+        ("aggregator", args.aggregator), ("omega", args.omega),
+        ("entropy_coef", args.entropy_coef),
     ]:
         if val is not None:
             setattr(cfg, field, val)
