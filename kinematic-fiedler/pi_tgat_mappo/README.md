@@ -258,6 +258,95 @@ only once mission-seeking behavior emerges does a CR-vs-dropout comparison
 across architectures become a meaningful robustness result rather than a
 measurement of idle-clustering tendency.
 
+## Pilot run v2: reward rebalancing and its effect (2026-09-24)
+
+Following the pilot run above, `omega` (spectral-connectivity reward
+weight) was identified as the likely cause of the clustering optimum:
+`r_conn = -max(0, exp(lambda_crit - lam2) - 1)` is an *exponential*
+penalty once connectivity drops below `lambda_crit`, and at `omega=2.5`
+that penalty dominated the linear, small-magnitude `task_reward` enough
+that PPO learned to avoid movement risking any disconnection at all,
+rather than risk it for mission progress.
+
+A second training pass (`--run-name <name>_v2` throughout) changed four
+things together, isolating none of them individually but all pointing the
+same direction -- reduce the cost of movement, increase the reward
+signal's usefulness, and shorten the task:
+- `omega`: 2.5 -> **0.3** (via a new `--omega` CLI flag)
+- `entropy_coef`: 0.01 -> **0.03** (via a new `--entropy-coef` CLI flag,
+  more exploration pressure)
+- `n_waypoints`: 6 -> **3** (via `--n-waypoints`, shorter mission)
+- `waypoint_radius`: 15 -> **25** (via `--waypoint-radius`, more forgiving
+  target zone)
+- `max_steps`, box scale, `r_comm`/`kappa` left unchanged from the
+  original pilot (600 steps, 200x200x40 m box, `r_comm=60`, `kappa=0.1`) --
+  a quick diagnostic run confirmed the episode-length budget was never
+  the binding constraint (expected travel distance for 3 waypoints in
+  this box is ~90-140 steps, well under 600).
+
+**Effect on training**: this measurably broke the clustering optimum.
+`connectivity_ratio` during training went from pinned at 1.0000 for every
+iteration (original pilot) to varying freely (0.01-0.87 across a single
+250-iteration run) -- the policy is now actually willing to risk
+disconnection. `mission_progress` also rose ~5x in typical magnitude
+(from a 0.01-0.04 ceiling to a 0.05-0.07 plateau, occasionally spiking to
+0.15-0.2), though it plateaued rather than continuing to climb past
+roughly iteration 60-80 of 250 (linear-fit slope over the full run:
+-0.0001/iteration, i.e. flat to very slightly declining) -- more
+iterations at this same configuration would not likely have helped
+further; `mission_complete` never left 0.0% for any of the four
+architectures even after this fix.
+
+**Corrected CR-vs-dropout comparison, all four architectures retrained
+under the v2 configuration:**
+
+```
+            0% dropout:  DGN-lite 27.8%  |  PI-TGAT 30.4%  |  TarMAC-lite 29.7%  |  Vanilla 39.7%
+           15% dropout:  DGN-lite 26.0%  |  PI-TGAT 25.8%  |  TarMAC-lite 22.7%  |  Vanilla 33.0%
+           30% dropout:  DGN-lite 20.5%  |  PI-TGAT 25.4%  |  TarMAC-lite 22.2%  |  Vanilla 32.2%
+   (n = 20 episodes per cell, seed=123; standard deviations again roughly
+   as large as the means, e.g. 39.7% +/- 33.0%.)
+```
+
+Two things changed and one thing didn't, relative to the original pilot.
+Changed: the three *communicating* architectures (DGN-lite, PI-TGAT,
+TarMAC-lite) are now much closer to each other -- differences of 2-5
+points against 20-30 point standard deviations, i.e. statistically
+indistinguishable from one another, consistent with all three plateauing
+at similar `mission_progress` levels during training. Unchanged, and
+worth taking seriously: **Vanilla MAPPO -- the architecture with no
+cross-agent communication mechanism at all -- is still highest at every
+dropout level**, and the gap did not shrink after specifically addressing
+the reward-shaping issue that was the leading hypothesis for causing it:
+
+```
+                     0% dropout    15% dropout    30% dropout
+original pilot:   Vanilla +1.3pt  Vanilla +4.9pt  Vanilla +5.2pt   (vs. PI-TGAT)
+v2 (rebalanced):  Vanilla +9.3pt  Vanilla +7.2pt  Vanilla +6.8pt   (vs. PI-TGAT)
+```
+
+**Revised conclusion**: a pattern that only appeared once could plausibly
+have been a training artifact or noise; one that replicates -- and if
+anything strengthens -- across two training runs with substantially
+different reward weighting is more likely a structural property of this
+task/reward setup than an incidental bug. The likely fuller explanation:
+the three communicating architectures are specifically designed (via the
+kinematic prior / cached neighbor state) to keep attempting coordinated
+movement through communication blackouts, which is a mechanism that
+*encourages* tolerating disconnection in service of the mission. Vanilla,
+with no such mechanism, has no comparable incentive to ever risk
+disconnection, and simply defaults to whatever movement pattern keeps it
+near its own local optimum -- which happens to preserve topology better.
+In other words: CR alone, absent meaningfully differentiated mission
+completion (`mission_complete` stayed 0.0% for all four in both pilot
+runs), may structurally favor "does not communicate" regardless of
+further reward tuning, because there is nothing in the task forcing a
+communicating architecture's willingness-to-disconnect to pay off. A
+future run that achieves actual, differentiated mission completion across
+architectures (not just connectivity behavior) would be needed before a
+CR-vs-dropout comparison can be read as evidence about the kinematic-prior
+mechanism's value, one way or the other.
+
 ## Baselines, combined
 
 All four architectures the paper compares are combinations of two
