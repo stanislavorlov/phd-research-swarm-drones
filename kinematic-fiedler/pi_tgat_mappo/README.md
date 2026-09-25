@@ -220,10 +220,10 @@ task-progress term, and at this compressed box scale a tightly-clustered,
 stationary swarm is *already* fully connected almost for free -- so PPO
 converged toward a connectivity-preserving, low-mobility local optimum
 rather than active waypoint-seeking. This is consistent across all four
-architectures (not specific to one), so it doesn't bias an architecture
-comparison against any single baseline, but it does mean the CR-vs-dropout
+architectures (not specific to one). So it doesn't bias an architecture
+comparison against any single baseline, but it does mean the CR-vs.-dropout
 numbers below should **not** be read as "robustness while performing the
-mission" -- none of the four were meaningfully performing it.
+mission"—none of the four were meaningfully performing it.
 
 That confound shows up directly in the corrected results:
 
@@ -346,6 +346,60 @@ future run that achieves actual, differentiated mission completion across
 architectures (not just connectivity behavior) would be needed before a
 CR-vs-dropout comparison can be read as evidence about the kinematic-prior
 mechanism's value, one way or the other.
+
+## Pilot run: box-shrink check and final status (2026-09-24)
+
+One further, narrower check was run before stopping hyperparameter search:
+a shrunk-scale training pass for PI-TGAT only (`--box-size 130 130 26`,
+`r_comm=40`, `kappa=0.15`, `n_waypoints=3`, `waypoint_radius=16`, v2's
+`omega=0.3`/`entropy_coef=0.03` carried forward, 60 iterations), on the
+hypothesis that a denser environment sharpens the task-reward gradient
+per unit of movement and might finally produce non-zero mission
+completion.
+
+**Result: mission_complete stayed at 0.0%, exactly as in both prior
+pilots.** `mission_progress` was effectively flat across the run
+(first-third mean 0.083, last-third mean 0.089 — a change of 0.006,
+noise-level, not a trend). This is the third independently different
+configuration — original pilot (`omega=2.5`), v2 (`omega=0.3`, more
+entropy, shorter/wider mission), and this box-shrink pass (v2's reward
+weights plus a much denser environment) — to produce zero mission
+completions. **Hyperparameter search is stopped here** rather than
+continued, per the reasoning in "Pilot run v2" above: three attempts
+across substantially different reward/scale configurations, with no
+movement on the one metric that would validate any of them, is now
+better read as a finding about the reward/task formulation than as a
+tuning problem still waiting on the right setting.
+
+The one metric that did move, CR, moved for a reason that undercuts
+using it here: connectivity ratio for PI-TGAT alone jumped from v2's
+30.4% / 25.8% / 25.4% (0/15/30% dropout) to 60.1% / 55.4% / 54.5% in the
+shrunk box -- roughly double, with mission completion identical (zero)
+before and after. Because only PI-TGAT was retrained at this scale, this
+number is **not comparable** to the other three architectures' v2 rows in
+the same table. It confirms, rather than refutes, the session's earlier
+interpretation that CR is highly sensitive to environment scale/density
+independent of task performance, and reinforces that CR without
+accompanying MCR is measuring default clustering tendency, not a
+robustness property of any architecture's communication mechanism.
+
+**Where this leaves the comparison, for write-up purposes:** the
+pipeline (environment, all four architectures, the node-dropout
+evaluation harness, and the corrected hard-topology CR metric) is
+validated and reusable. The CR-vs-dropout numbers collected across all
+three pilot configurations are reportable as a diagnostic finding -- that
+architecture ranking under this particular reward formulation is
+dominated by baseline clustering behavior rather than communication
+robustness, evidenced by MCR remaining at 0.0% throughout -- but they
+should **not** be reported as a robustness ranking of the four
+architectures, since no configuration tried produced the differentiated
+task performance that claim would require. Resolving that is a reward
+formulation or task-design question (e.g. a denser progress-shaping
+term, an explicit terminal completion bonus, or revisiting whether a
+600-step/8-15-agent budget can support waypoint-following at all under
+this physics model) that is out of scope for further pilot-scale
+hyperparameter tuning and is flagged here as a known limitation rather
+than pursued further at this scale.
 
 ## Baselines, combined
 

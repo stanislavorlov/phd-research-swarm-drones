@@ -118,5 +118,35 @@
     "cr_std": 0.23380932105267127,
     "mcr_mean": 0.0,
     "mcr_std": 0.0
+  },
+  {
+    "label": "PI-TGAT (box-shrink)",
+    "checkpoint": "pi_tgat_mappo/results/box_shrink_check/pi_tgat_mappo.pt",
+    "dropout_pct": 0.0,
+    "n_episodes": 20,
+    "cr_mean": 0.6014999999999999,
+    "cr_std": 0.2935249847400842,
+    "mcr_mean": 0.0,
+    "mcr_std": 0.0
+  },
+  {
+    "label": "PI-TGAT (box-shrink)",
+    "checkpoint": "pi_tgat_mappo/results/box_shrink_check/pi_tgat_mappo.pt",
+    "dropout_pct": 15.0,
+    "n_episodes": 20,
+    "cr_mean": 0.5538333333333332,
+    "cr_std": 0.21698444644720505,
+    "mcr_mean": 0.0,
+    "mcr_std": 0.0
+  },
+  {
+    "label": "PI-TGAT (box-shrink)",
+    "checkpoint": "pi_tgat_mappo/results/box_shrink_check/pi_tgat_mappo.pt",
+    "dropout_pct": 30.0,
+    "n_episodes": 20,
+    "cr_mean": 0.5447500000000001,
+    "cr_std": 0.21189244847851993,
+    "mcr_mean": 0.0,
+    "mcr_std": 0.0
   }
 ]

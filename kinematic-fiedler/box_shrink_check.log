@@ -1,2 +1,24 @@
 /Users/stanislavorlov/PycharmProjects/phd-research-swarm-drones/.venv/lib/python3.13/site-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
   warnings.warn(
+device = mps, kinematic_prior = True, N in [8, 15], max_steps = 600
+iter    1/60 | return -277.954 | CR  0.28 | MCR  0.00 | progress  0.04 | fiedler 0.1634 | pi_loss  0.4447 | v_loss 56.6384 | elapsed   22.9s
+iter    5/60 | return -295.746 | CR  0.44 | MCR  0.00 | progress  0.00 | fiedler 0.7926 | pi_loss  0.4122 | v_loss 45.3879 | elapsed  115.9s
+iter   10/60 | return -209.242 | CR  0.28 | MCR  0.00 | progress  0.06 | fiedler 0.1337 | pi_loss  0.4972 | v_loss  8.9249 | elapsed  228.4s
+Saved learning curve to /Users/stanislavorlov/PycharmProjects/phd-research-swarm-drones/kinematic-fiedler/pi_tgat_mappo/results/box_shrink_check/learning_curve.png
+iter   15/60 | return -293.717 | CR  0.41 | MCR  0.00 | progress  0.04 | fiedler 0.2582 | pi_loss  0.6721 | v_loss 18.4137 | elapsed  342.7s
+iter   20/60 | return -184.340 | CR  0.86 | MCR  0.00 | progress  0.20 | fiedler 0.5686 | pi_loss  0.2374 | v_loss 17.8856 | elapsed  454.3s
+Saved learning curve to /Users/stanislavorlov/PycharmProjects/phd-research-swarm-drones/kinematic-fiedler/pi_tgat_mappo/results/box_shrink_check/learning_curve.png
+iter   25/60 | return -207.457 | CR  0.25 | MCR  0.00 | progress  0.02 | fiedler 0.0970 | pi_loss  0.2099 | v_loss 13.8751 | elapsed  567.5s
+iter   30/60 | return -191.211 | CR  0.62 | MCR  0.00 | progress  0.13 | fiedler 0.4384 | pi_loss  0.2904 | v_loss 12.7472 | elapsed  683.8s
+Saved learning curve to /Users/stanislavorlov/PycharmProjects/phd-research-swarm-drones/kinematic-fiedler/pi_tgat_mappo/results/box_shrink_check/learning_curve.png
+iter   35/60 | return -209.340 | CR  0.45 | MCR  0.00 | progress  0.03 | fiedler 0.3509 | pi_loss  0.3736 | v_loss 16.8015 | elapsed  797.7s
+iter   40/60 | return -208.487 | CR  0.27 | MCR  0.00 | progress  0.06 | fiedler 0.1112 | pi_loss  0.1788 | v_loss 13.2910 | elapsed  910.1s
+Saved learning curve to /Users/stanislavorlov/PycharmProjects/phd-research-swarm-drones/kinematic-fiedler/pi_tgat_mappo/results/box_shrink_check/learning_curve.png
+iter   45/60 | return -214.187 | CR  0.26 | MCR  0.00 | progress  0.05 | fiedler 0.1179 | pi_loss  0.3122 | v_loss 13.2448 | elapsed 1025.7s
+iter   50/60 | return -189.808 | CR  0.44 | MCR  0.00 | progress  0.16 | fiedler 0.1675 | pi_loss  0.2216 | v_loss 12.1214 | elapsed 1137.5s
+Saved learning curve to /Users/stanislavorlov/PycharmProjects/phd-research-swarm-drones/kinematic-fiedler/pi_tgat_mappo/results/box_shrink_check/learning_curve.png
+iter   55/60 | return -243.316 | CR  0.54 | MCR  0.00 | progress  0.13 | fiedler 0.3564 | pi_loss  0.2497 | v_loss 17.2615 | elapsed 1250.1s
+iter   60/60 | return -277.303 | CR  0.91 | MCR  0.00 | progress  0.02 | fiedler 0.3885 | pi_loss  0.3386 | v_loss 17.5836 | elapsed 1361.2s
+Saved learning curve to /Users/stanislavorlov/PycharmProjects/phd-research-swarm-drones/kinematic-fiedler/pi_tgat_mappo/results/box_shrink_check/learning_curve.png
+
+Done. Results written to /Users/stanislavorlov/PycharmProjects/phd-research-swarm-drones/kinematic-fiedler/pi_tgat_mappo/results/box_shrink_check
