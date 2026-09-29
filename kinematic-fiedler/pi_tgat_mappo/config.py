@@ -48,7 +48,21 @@ class Config:
     tau_safe: float = 0.85              # paper: tau_safe = 0.85, unchanged
     omega: float = 2.5                  # paper: omega = 2.5 (spectral reward weight), unchanged
     lambda_crit: float = 0.2            # paper: lambda_crit = 0.2 (Table 1 AND Model
-                                         # Architecture section agree on this value), unchanged
+                                         # Architecture section agree on this value). This is the
+                                         # TARGET-DESIGN value; it is NOT the correct value at pilot
+                                         # scale (r_comm=110, kappa=0.055, box=(200,200,40)) because
+                                         # lambda_crit is compared directly against the Fiedler value
+                                         # lambda2, whose distribution shifts substantially when
+                                         # r_comm/kappa are rescaled to preserve mean node degree
+                                         # (median lambda2 ~0.70 at target scale vs ~2.16 at pilot v3
+                                         # scale, from a 3000-sample Monte Carlo check at reset). The
+                                         # percentile-matched pilot-scale equivalent is ~0.85 (i.e. it
+                                         # activates the connectivity penalty for roughly the same
+                                         # bottom few percent of connectivity states that 0.2 does at
+                                         # target scale). All four v3 checkpoints in the paper were
+                                         # trained with this field still at 0.2 (unrescaled), so the
+                                         # connectivity-reward term was effectively inactive throughout
+                                         # v3 training. Pass --lambda-crit 0.85 to retrain correctly.
 
     # ---------------------------------------------------------------
     # Neural architecture  (Table 1, "Neural Architecture")

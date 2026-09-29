@@ -58,6 +58,12 @@ def parse_args():
     p.add_argument("--n-waypoints", type=int, default=None)
     p.add_argument("--waypoint-radius", type=float, default=None)
     p.add_argument("--r-comm", type=float, default=None)
+    p.add_argument("--lambda-crit", type=float, default=None,
+                    help="Fiedler-value activation threshold for the connectivity-reward penalty; "
+                         "paper/target-design value is 0.2, but that value is NOT valid at a rescaled "
+                         "box/r_comm/kappa (it is compared directly against lambda2, whose typical "
+                         "magnitude shifts with the rescale) -- see config.py's lambda_crit comment "
+                         "for the pilot-v3-scale percentile-matched equivalent (~0.85)")
     p.add_argument("--box-size", type=float, nargs=3, default=None, metavar=("X", "Y", "Z"))
     p.add_argument("--omega", type=float, default=None,
                     help="spectral-connectivity reward weight; paper value is 2.5, but that can "
@@ -92,7 +98,7 @@ def build_config(args) -> Config:
         ("n_epochs", args.n_epochs), ("n_waypoints", args.n_waypoints),
         ("waypoint_radius", args.waypoint_radius), ("r_comm", args.r_comm),
         ("aggregator", args.aggregator), ("omega", args.omega),
-        ("entropy_coef", args.entropy_coef),
+        ("entropy_coef", args.entropy_coef), ("lambda_crit", args.lambda_crit),
     ]:
         if val is not None:
             setattr(cfg, field, val)

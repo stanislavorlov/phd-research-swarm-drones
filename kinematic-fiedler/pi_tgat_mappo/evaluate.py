@@ -101,22 +101,49 @@ def evaluate_checkpoint(args) -> dict:
     rows = []
     for rate in dropout_rates:
         cfg.node_dropout_rate = rate
-        crs, mcrs = [], []
+        # Three separate, independent per-episode measurements -- deliberately
+        # NOT collapsed into one gated success bit. mission_complete requires
+        # ALL K waypoints reached simultaneously by episode end (pure
+        # navigation, no connectivity gate: see the "MCR is ungated" note in
+        # the Methods section). reached_first_wp/first_wp_step diagnose
+        # whether the swarm makes ANY purposeful progress at all, separate
+        # from whether it finishes. connectivity_ratio is the network metric,
+        # measured on the exact same rollouts, so it can be directly compared
+        # against navigation outcomes episode-by-episode.
+        crs, mcrs, progresses, first_wp_flags, first_wp_steps = [], [], [], [], []
         for _ in range(args.episodes_per_rate):
             _, stats = trainer.collect_episode(env, deterministic=not args.stochastic)
             crs.append(stats["connectivity_ratio"])
             mcrs.append(float(stats["mission_complete"]))
+            progresses.append(stats["mission_progress"])
+            first_wp_flags.append(float(stats["reached_first_wp"]))
+            if stats["reached_first_wp"]:
+                first_wp_steps.append(stats["first_wp_step"])
+
+        reached_frac = float(np.mean(first_wp_flags))
+        time_to_first_wp_mean = float(np.mean(first_wp_steps)) if first_wp_steps else float("nan")
+        time_to_first_wp_std = float(np.std(first_wp_steps)) if first_wp_steps else float("nan")
+
         row = dict(
             label=label, checkpoint=args.checkpoint, dropout_pct=rate * 100,
             n_episodes=args.episodes_per_rate,
             cr_mean=float(np.mean(crs)), cr_std=float(np.std(crs)),
             mcr_mean=float(np.mean(mcrs)) * 100, mcr_std=float(np.std(mcrs)) * 100,
+            # -- new, decomposed navigation metrics --
+            waypoint_frac_mean=float(np.mean(progresses)), waypoint_frac_std=float(np.std(progresses)),
+            reached_first_wp_pct=reached_frac * 100,
+            time_to_first_wp_steps_mean=time_to_first_wp_mean,
+            time_to_first_wp_steps_std=time_to_first_wp_std,
+            time_to_first_wp_sec_mean=time_to_first_wp_mean * cfg.dt if first_wp_steps else float("nan"),
         )
         rows.append(row)
-        print(f"  {label} @ {rate*100:4.0f}% node dropout: "
-              f"CR = {row['cr_mean']*100:5.1f}% +/- {row['cr_std']*100:4.1f}%, "
-              f"MCR = {row['mcr_mean']:5.1f}% +/- {row['mcr_std']:4.1f}%  "
-              f"(n={args.episodes_per_rate} episodes)")
+        print(f"  {label} @ {rate*100:4.0f}% node dropout  (n={args.episodes_per_rate} episodes): "
+              f"CR = {row['cr_mean']*100:5.1f}% +/- {row['cr_std']*100:4.1f}%   "
+              f"waypoint-frac = {row['waypoint_frac_mean']:.3f} +/- {row['waypoint_frac_std']:.3f}   "
+              f"reached-wp1 = {row['reached_first_wp_pct']:5.1f}%   "
+              f"time-to-wp1 = {row['time_to_first_wp_steps_mean']:.1f} steps "
+              f"({row['time_to_first_wp_sec_mean']:.1f}s)   "
+              f"MCR = {row['mcr_mean']:5.1f}% +/- {row['mcr_std']:4.1f}%")
     return rows
 
 

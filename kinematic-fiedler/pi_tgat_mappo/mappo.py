@@ -47,6 +47,8 @@ class MAPPOTrainer:
         hidden = self.actor.init_hidden(env.n, self.device)
         buf = EpisodeBuffer()
         ep_return, fiedler_hist, connected_hist = 0.0, [], []
+        t = 0
+        first_wp_step = None  # step at which the swarm's mean wp_idx first reaches >= 1
 
         done = False
         info = {}
@@ -64,6 +66,9 @@ class MAPPOTrainer:
 
             action_np = action.clamp(-1.0, 1.0).cpu().numpy()
             next_graph, reward, done, info = env.step(action_np)
+            t += 1
+            if first_wp_step is None and np.mean(env.wp_idx) >= 1.0:
+                first_wp_step = t
 
             buf.add(
                 node_feats=graph["node_feats"], edge_index=graph["edge_index"],
@@ -83,6 +88,16 @@ class MAPPOTrainer:
             mission_complete=float(info.get("mission_complete", False)),
             mission_progress=info.get("mission_progress", 0.0),
             mean_fiedler=float(np.mean(fiedler_hist)),
+            episode_len=t,
+            # NOTE: mission_progress above is fraction of waypoints reached (mean
+            # wp_idx / (K-1)) at EPISODE END -- kept as-is for backward
+            # compatibility with train.py's logging. first_wp_step/reached_first_wp
+            # are new: whether/when the swarm collectively cleared waypoint 1,
+            # decoupled from connectivity_ratio, so evaluate.py can report
+            # navigation and connectivity as separate columns instead of only
+            # the single collapsed mission_complete bit.
+            reached_first_wp=first_wp_step is not None,
+            first_wp_step=first_wp_step,  # None if never reached within the episode
         )
         return buf, stats
 
