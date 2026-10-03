@@ -40,7 +40,8 @@ class SetEncoder(nn.Module):
 
 
 def dims(cfg: EnvConfig):
-    return 2 + cfg.n_channels + 1, 4, 2 + cfg.n_channels
+    ex = bool(getattr(cfg, "obs_extra", False))
+    return 2 + cfg.n_channels + 1 + (2 if ex else 0), 4 + (2 if ex else 0), 2 + cfg.n_channels
 
 
 class Actor(nn.Module):
@@ -67,6 +68,60 @@ class Actor(nn.Module):
         lp = dn.log_prob(a).sum(-1) + dc.log_prob(c)
         ent = dn.entropy().sum(-1) + dc.entropy()
         return lp, ent
+
+
+class StudentActor(Actor):
+    """
+    Actor with two BC-only options; everything the online phase uses is inherited unchanged.
+
+      mdn_k > 0   position head is a mixture of mdn_k diagonal Gaussians trained with NLL (so a multimodal teacher is
+                  not averaged into a hovering UAV). forward() returns the mean of the most probable component, so
+                  Actor.dist / log_prob_entropy / NetPolicy / MAPPO work unchanged (Gaussian around the mode).
+      chunk  > 1  auxiliary head predicting the next chunk-1 displacements of the plan (action chunking as a
+                  representation-shaping loss; never executed).
+    """
+    def __init__(self, cfg: EnvConfig, d=64, mdn_k=0, chunk=1, log_std=math.log(0.2)):
+        super().__init__(cfg, d=d, log_std=log_std)
+        self.mdn_k, self.chunk = int(mdn_k), int(chunk)
+        if self.mdn_k > 0:
+            self.mdn = nn.Linear(d, self.mdn_k * 5)       # per component: mu(2), log-std(2), mixture logit(1)
+        if self.chunk > 1:
+            self.chunk_head = nn.Linear(d, 2 * (self.chunk - 1))
+
+    def _mdn(self, h):
+        p = self.mdn(h).view(h.shape[0], self.mdn_k, 5)
+        return p[..., 0:2], p[..., 2:4].clamp(-4.0, 1.0), torch.log_softmax(p[..., 4], -1)
+
+    def forward(self, o: Obs):
+        h = self.enc(o)
+        if self.mdn_k > 0:
+            mu, _, lw = self._mdn(h)
+            pos = mu[torch.arange(h.shape[0], device=h.device), lw.argmax(-1)]
+        else:
+            pos = self.pos_head(h)
+        return pos, self.ch_head(h)
+
+    def bc_loss(self, o: Obs, a_chunk, mask, c, w_chunk=0.5, w_ch=1.0):
+        """a_chunk [n,H,2] expert displacements for steps t..t+H-1, mask [n,H] valid, c [n] expert channel."""
+        h = self.enc(o)
+        a0 = a_chunk[:, 0]
+        if self.mdn_k > 0:
+            mu, ls, lw = self._mdn(h)
+            z = (a0.unsqueeze(1) - mu) / ls.exp()
+            logp = lw - 0.5 * (z ** 2).sum(-1) - ls.sum(-1) - math.log(2 * math.pi)
+            pos_loss = -torch.logsumexp(logp, -1).mean()
+            mode = mu[torch.arange(h.shape[0], device=h.device), lw.argmax(-1)]
+        else:
+            mode = self.pos_head(h)
+            pos_loss = F.mse_loss(mode, a0)
+        logits = self.ch_head(h)
+        loss = pos_loss + w_ch * F.cross_entropy(logits, c)
+        if self.chunk > 1:
+            pred = self.chunk_head(h).view(-1, self.chunk - 1, 2)
+            m = mask[:, 1:self.chunk].float().unsqueeze(-1)
+            loss = loss + w_chunk * (((pred - a_chunk[:, 1:self.chunk]) ** 2) * m).sum() / (2 * m.sum() + 1e-6)
+        stats = dict(mse0=float(F.mse_loss(mode, a0).detach()), acc=float((logits.argmax(-1) == c).float().mean().detach()))
+        return loss, stats
 
 
 class Critic(nn.Module):

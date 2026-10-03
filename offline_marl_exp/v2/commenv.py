@@ -41,6 +41,9 @@ class EnvConfig:
     user_speed: float = 0.4    # max cluster drift speed per step
     energy: float = 0.5        # propulsion-energy price per UAV per step: lambda * ||d||^2 (d in unit-ball units)
     k: float = float("inf")    # observation radius (actor)
+    # opt-in (default False keeps every v2 result reproducible): add the UAV's own previous displacement to the
+    # self features and the user position extrapolated EXTRAP_STEPS steps ahead to the user features.
+    obs_extra: bool = False
 
     def with_k(self, k):
         return replace(self, k=float(k))
@@ -103,6 +106,9 @@ def gen_scenario(seed: int, cfg: EnvConfig):
     return np.stack(traj), uvel, uav0, ch0
 
 
+EXTRAP_STEPS = 4.0
+
+
 class Obs(NamedTuple):
     sf: torch.Tensor   # [B,N,sd]      own pos/W, own channel one-hot, t/T
     uf: torch.Tensor   # [B,N,U,4]     user rel pos / (W/2), user velocity / vmax
@@ -149,6 +155,7 @@ class CommEnv:
         self.uav = self.uav0.clone()
         self.ch = self.ch0.clone()
         self.t = 0
+        self.prev = torch.zeros(self.B, self.cfg.n_agents, 2)               # last executed (clipped) displacement
         return self.obs(self.cfg.k)
 
     # --------------------------------------------------------------- observation
@@ -167,6 +174,9 @@ class CommEnv:
         am = (rel_a.norm(dim=-1) <= k) & ~eye
         af = torch.cat([rel_a / sc, oh.unsqueeze(1).expand(-1, N, -1, -1)], -1)
         sf = torch.cat([self.uav / cfg.world, oh, torch.full((B, N, 1), t / cfg.T)], -1)
+        if cfg.obs_extra:
+            uf = torch.cat([uf, (rel_u + EXTRAP_STEPS * vel.unsqueeze(1)) / sc], -1)    # rel. pos. 4 steps ahead
+            sf = torch.cat([sf, self.prev], -1)                                           # own previous displacement
         return Obs(sf, uf, um, af, am)
 
     # --------------------------------------------------------------- dynamics
@@ -175,6 +185,7 @@ class CommEnv:
         cfg = self.cfg
         n = disp.norm(dim=-1, keepdim=True)
         disp = disp / n.clamp(min=1.0)
+        self.prev = disp.clone()
         self.uav = (self.uav + cfg.vmax * disp).clamp(0.0, cfg.world)
         self.ch = ch_new.clamp(0, cfg.n_channels - 1).long()
         self.t += 1
