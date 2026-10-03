@@ -1,0 +1,11 @@
+fresh seeds 500000..500255: stay-put 49.38  random 44.95  expert 117.59
+bc_only            mean   63.11  95% CI over seeds [62.67, 63.56]  expert-normalised +0.209
+bc_masked          mean   79.20  95% CI over seeds [78.00, 80.40]  expert-normalised +0.416
+bc_unmasked        mean   79.65  95% CI over seeds [78.16, 80.61]  expert-normalised +0.427
+scratch_masked     mean   47.50  95% CI over seeds [37.12, 56.55]  expert-normalised -0.074
+scratch_unmasked   mean   37.59  95% CI over seeds [30.42, 43.47]  expert-normalised -0.230
+  bc_masked - bc_unmasked: -0.45  CI [-2.30, +1.66]  per-seed [0.5799999833106995, -1.4500000476837158, -3.549999952316284, -1.1399999856948853, 3.2899999618530273]
+  scratch_masked - scratch_unmasked: +9.92  CI [-0.96, +23.82]  per-seed [33.08000183105469, -8.34000015258789, 4.619999885559082, 5.0, 15.220000267028809]
+  bc_masked - scratch_masked: +31.70  CI [+23.39, +41.69]  per-seed [24.030000686645508, 51.02000045776367, 28.059999465942383, 34.959999084472656, 20.43000030517578]
+  bc_masked - bc_only: +16.09  CI [+14.64, +17.63]  per-seed [18.65999984741211, 15.579999923706055, 13.5, 15.760000228881836, 16.940000534057617]
+  bc_unmasked - bc_only: +16.54  CI [+15.00, +17.63]  per-seed [18.079999923706055, 17.030000686645508, 17.049999237060547, 16.899999618530273, 13.649999618530273]

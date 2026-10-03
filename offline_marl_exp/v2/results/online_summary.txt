@@ -1,0 +1,14 @@
+Reference returns on the 256 held-out scenarios: stay-put 51.19, random 46.11, weak expert 100.50, strong expert 117.96, interference-free upper-bound proxy 156.18
+Expert solve time: 0.94 s for ONE scenario (4 restarts x 4 BCD rounds, CPU); 0.47 s/scenario when batched
+
+BC → MAPPO, masked critic (Ours)         start   65.04  final   79.41  95% CI over seeds [78.61, 80.30]  expert-normalised final +0.423
+BC → MAPPO, unmasked critic              start   65.04  final   81.04  95% CI over seeds [79.67, 82.20]  expert-normalised final +0.447
+scratch → MAPPO, masked critic           start   21.27  final   47.66  95% CI over seeds [37.27, 56.65]  expert-normalised final -0.053
+scratch → MAPPO, unmasked critic         start   21.27  final   37.62  95% CI over seeds [30.57, 43.30]  expert-normalised final -0.203
+
+Paired differences at the final checkpoint (per-seed, same training scenarios & noise; bootstrap CI over seeds):
+  mask effect (BC init)                     -1.63  CI [-3.28, +0.13]  (NOT separated from 0, n=5 seeds)
+  mask effect (scratch init)               +10.04  CI [-1.29, +24.07]  (NOT separated from 0, n=5 seeds)
+  initialisation effect (masked critic)    +31.75  CI [+23.35, +41.56]  (separated from 0, n=5 seeds)
+  online gain over BC-only (masked)        +14.37  CI [+13.62, +15.27]  (n=5 seeds)
+  online gain over BC-only (unmasked)      +16.00  CI [+14.33, +17.52]  (n=5 seeds)
