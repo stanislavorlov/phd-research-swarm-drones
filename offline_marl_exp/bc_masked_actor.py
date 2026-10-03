@@ -98,7 +98,8 @@ class MaskedActor(nn.Module):
         return pos, channel_logits
 
 def train_behavioral_cloning():
-    dataset_path = "data/expert_dataset_sample.json"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    dataset_path = os.path.join(script_dir, "data", "expert_dataset_sample.json")
     if not os.path.exists(dataset_path):
         print("Dataset not found. Please run expert_solver.py first.")
         return
@@ -137,7 +138,9 @@ def train_behavioral_cloning():
             print(f"Epoch {epoch+1}/{epochs} | Loss: {total_loss/len(dataloader):.4f}")
             
     print("Training complete. Saving student policy.")
-    torch.save(model.state_dict(), "masked_actor_policy.pth")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    model_path = os.path.join(script_dir, "masked_actor_policy.pth")
+    torch.save(model.state_dict(), model_path)
 
 if __name__ == "__main__":
     train_behavioral_cloning()
