@@ -10,7 +10,7 @@ SSH="ssh -p $PORT -o StrictHostKeyChecking=accept-new"
 echo ">> sync $HERE -> $USER_@$IP:$RDIR"
 $SSH "$USER_@$IP" "mkdir -p $RDIR"
 if command -v rsync >/dev/null && $SSH "$USER_@$IP" "command -v rsync" >/dev/null 2>&1; then
-  rsync -az --info=progress2 -e "$SSH" \
+  rsync -az --progress2 -e "$SSH" \
     --exclude '__pycache__' --exclude '.pytest_cache' --exclude 'results2' --exclude 'results_smoke' --exclude '.git' \
     "$HERE/" "$USER_@$IP:$RDIR/"
 else

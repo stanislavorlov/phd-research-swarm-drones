@@ -7,13 +7,13 @@ IP="${1:?usage: fetch.sh <ip> [port] [remote-dir] [user]}"
 PORT="${2:-22}"; RDIR="${3:-~/v2}"; USER_="${4:-root}"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SSH="ssh -p $PORT -o StrictHostKeyChecking=accept-new"
-EXC=()
-[ "${WITH_CKPT:-1}" = "0" ] && EXC=(--exclude '*.pt')
+EXC=""
+[ "${WITH_CKPT:-1}" = "0" ] && EXC="--exclude *.pt"
 for d in results2 results_smoke; do
   if $SSH "$USER_@$IP" "test -d $RDIR/$d"; then
     echo ">> fetch $d"
     mkdir -p "$HERE/$d"
-    rsync -az --info=progress2 -e "$SSH" "${EXC[@]}" "$USER_@$IP:$RDIR/$d/" "$HERE/$d/"
+    rsync -az --progress2 -e "$SSH" $EXC "$USER_@$IP:$RDIR/$d/" "$HERE/$d/"
   fi
 done
 echo ">> done. Summarise locally:  cd $HERE && python summarize.py"
