@@ -1,0 +1,18 @@
+== A2 seed 0  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': True}  device=cuda  args={'k': 6.0, 'd': 128, 'head': 'mdn', 'mdn_k': 5, 'chunk': 4, 'obs_extra': True, 'no_aug': False, 'epochs0': 150, 'bs': 2048, 'lr': 0.002, 'wd': 0.0001, 'w_chunk': 0.5, 'device': 'cuda', 'seed': 0, 'train_data': 'data/expert_train.pt', 'val_data': 'data/expert_val.pt', 'plan_restarts': 4, 'plan_rounds': 4, 'plan_iters': 80, 'plan_energy': None, 'name': 'A2', 'out': 'results2', 'rounds': 0, 'scen': 256, 'epochs_round': 30, 'beta0': 0.5, 'noise': 0.05, 'n_monitor': 128, 'n_final': 256, 'final': False, 'smoke': False}
+round-0 rows: train 96000  val 16000  (3s)
+monitor refs: stay-put 49.83  expert 117.03  (10s)
+-- round 0: BC 150 epochs
+    ep    1/150  loss   2.2533 | EMA train mse0 0.1498 acc 0.578 | val mse0 0.1492 acc 0.600 | 1s
+    ep   15/150  loss  -1.1688 | EMA train mse0 0.0594 acc 0.879 | val mse0 0.0609 acc 0.868 | 6s
+    ep   30/150  loss  -1.4089 | EMA train mse0 0.0532 acc 0.879 | val mse0 0.0557 acc 0.868 | 12s
+    ep   45/150  loss  -1.6464 | EMA train mse0 0.0499 acc 0.879 | val mse0 0.0505 acc 0.868 | 18s
+    ep   60/150  loss  -1.6962 | EMA train mse0 0.0476 acc 0.879 | val mse0 0.0481 acc 0.868 | 24s
+    ep   75/150  loss  -1.7944 | EMA train mse0 0.0455 acc 0.879 | val mse0 0.0466 acc 0.868 | 29s
+    ep   90/150  loss  -1.6341 | EMA train mse0 0.0446 acc 0.879 | val mse0 0.0458 acc 0.868 | 33s
+    ep  105/150  loss  -1.7380 | EMA train mse0 0.0441 acc 0.879 | val mse0 0.0451 acc 0.868 | 38s
+    ep  120/150  loss  -1.8251 | EMA train mse0 0.0441 acc 0.879 | val mse0 0.0450 acc 0.868 | 43s
+    ep  135/150  loss  -1.8776 | EMA train mse0 0.0438 acc 0.879 | val mse0 0.0453 acc 0.868 | 48s
+    ep  150/150  loss  -1.8609 | EMA train mse0 0.0437 acc 0.879 | val mse0 0.0450 acc 0.868 | 53s
+[round 0] closed-loop 63.60  expert-normalised 0.221  val mse0 0.0450 acc 0.868
+best round by monitor: 0  norm 0.221
+wrote results2/A2/seed0/summary.json

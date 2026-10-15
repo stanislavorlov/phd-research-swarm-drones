@@ -1,0 +1,109 @@
+{
+ "name": "A3",
+ "seed": 0,
+ "opts": {
+  "k": 6.0,
+  "d": 128,
+  "mdn_k": 5,
+  "chunk": 4,
+  "obs_extra": true
+ },
+ "args": {
+  "k": 6.0,
+  "d": 128,
+  "head": "mdn",
+  "mdn_k": 5,
+  "chunk": 4,
+  "obs_extra": true,
+  "no_aug": false,
+  "epochs0": 300,
+  "bs": 2048,
+  "lr": 0.002,
+  "wd": 0.0001,
+  "w_chunk": 0.5,
+  "device": "cuda",
+  "seed": 0,
+  "train_data": "data/expert_train.pt",
+  "val_data": "data/expert_val.pt",
+  "plan_restarts": 4,
+  "plan_rounds": 4,
+  "plan_iters": 80,
+  "plan_energy": null,
+  "name": "A3",
+  "out": "results2",
+  "rounds": 5,
+  "scen": 256,
+  "epochs_round": 30,
+  "beta0": 0.5,
+  "noise": 0.05,
+  "n_monitor": 128,
+  "n_final": 256,
+  "final": false,
+  "smoke": false
+ },
+ "hist": [
+  {
+   "round": 0,
+   "monitor_return": 65.86187744140625,
+   "norm": 0.24836452305316925,
+   "val_mse0": 0.044781011506915096,
+   "val_acc": 0.8682499871253967,
+   "n_rows": 96000
+  },
+  {
+   "round": 1,
+   "monitor_return": 67.55269622802734,
+   "norm": 0.27292585372924805,
+   "val_mse0": 0.046607127219438556,
+   "val_acc": 0.8676874661445617,
+   "n_rows": 136960,
+   "beta": 0.5,
+   "collect_return": 116.34809875488281
+  },
+  {
+   "round": 2,
+   "monitor_return": 70.25064849853516,
+   "norm": 0.31533318758010864,
+   "val_mse0": 0.049398630931973456,
+   "val_acc": 0.8678124661445618,
+   "n_rows": 177920,
+   "beta": 0.25,
+   "collect_return": 108.33071899414062
+  },
+  {
+   "round": 3,
+   "monitor_return": 72.60696411132812,
+   "norm": 0.35425710678100586,
+   "val_mse0": 0.05387557862699032,
+   "val_acc": 0.8674374661445617,
+   "n_rows": 218880,
+   "beta": 0.125,
+   "collect_return": 100.12189483642578
+  },
+  {
+   "round": 4,
+   "monitor_return": 74.39159393310547,
+   "norm": 0.37554702162742615,
+   "val_mse0": 0.05783545985817909,
+   "val_acc": 0.8675624661445618,
+   "n_rows": 259840,
+   "beta": 0.0625,
+   "collect_return": 91.81484985351562
+  },
+  {
+   "round": 5,
+   "monitor_return": 75.44689178466797,
+   "norm": 0.3846496343612671,
+   "val_mse0": 0.061175326198339465,
+   "val_acc": 0.8675624661445618,
+   "n_rows": 300800,
+   "beta": 0.03125,
+   "collect_return": 85.27253723144531
+  }
+ ],
+ "best_round": 5,
+ "monitor_norm_best": 0.3846496343612671,
+ "monitor_return_best": 75.44689178466797,
+ "monitor_expert": 117.03034973144531,
+ "monitor_stay": 49.831295013427734
+}

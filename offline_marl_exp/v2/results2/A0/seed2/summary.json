@@ -1,0 +1,59 @@
+{
+ "name": "A0",
+ "seed": 2,
+ "opts": {
+  "k": 6.0,
+  "d": 128,
+  "mdn_k": 0,
+  "chunk": 1,
+  "obs_extra": false
+ },
+ "args": {
+  "k": 6.0,
+  "d": 128,
+  "head": "mse",
+  "mdn_k": 5,
+  "chunk": 1,
+  "obs_extra": false,
+  "no_aug": false,
+  "epochs0": 300,
+  "bs": 2048,
+  "lr": 0.002,
+  "wd": 0.0001,
+  "w_chunk": 0.5,
+  "device": "cuda",
+  "seed": 2,
+  "train_data": "data/expert_train.pt",
+  "val_data": "data/expert_val.pt",
+  "plan_restarts": 4,
+  "plan_rounds": 4,
+  "plan_iters": 80,
+  "plan_energy": null,
+  "name": "A0",
+  "out": "results2",
+  "rounds": 0,
+  "scen": 256,
+  "epochs_round": 30,
+  "beta0": 0.5,
+  "noise": 0.05,
+  "n_monitor": 128,
+  "n_final": 256,
+  "final": false,
+  "smoke": false
+ },
+ "hist": [
+  {
+   "round": 0,
+   "monitor_return": 68.24344635009766,
+   "norm": 0.23565930128097534,
+   "val_mse0": 0.07708126297593117,
+   "val_acc": 0.8452499694824219,
+   "n_rows": 96000
+  }
+ ],
+ "best_round": 0,
+ "monitor_norm_best": 0.23565930128097534,
+ "monitor_return_best": 68.24344635009766,
+ "monitor_expert": 117.03034973144531,
+ "monitor_stay": 49.831295013427734
+}

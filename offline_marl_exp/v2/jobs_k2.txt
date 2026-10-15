@@ -1,0 +1,6 @@
+python student.py --name A9_k3  --seed 1 --rounds 8 --scen 256 --epochs_round 30 --epochs0 300 --d 128 --head mdn --chunk 4 --k 3
+python student.py --name A9_k3  --seed 2 --rounds 8 --scen 256 --epochs_round 30 --epochs0 300 --d 128 --head mdn --chunk 4 --k 3
+python student.py --name A9_k10 --seed 1 --rounds 8 --scen 256 --epochs_round 30 --epochs0 300 --d 128 --head mdn --chunk 4 --k 10
+python student.py --name A9_k10 --seed 2 --rounds 8 --scen 256 --epochs_round 30 --epochs0 300 --d 128 --head mdn --chunk 4 --k 10
+python student.py --name A9_k15 --seed 1 --rounds 8 --scen 256 --epochs_round 30 --epochs0 300 --d 128 --head mdn --chunk 4 --k 15
+python student.py --name A9_k15 --seed 2 --rounds 8 --scen 256 --epochs_round 30 --epochs0 300 --d 128 --head mdn --chunk 4 --k 15

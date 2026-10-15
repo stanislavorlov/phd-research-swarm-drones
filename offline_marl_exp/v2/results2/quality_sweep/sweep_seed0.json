@@ -1,0 +1,100 @@
+{
+ "args": {
+  "k": 6.0,
+  "d": 128,
+  "head": "mdn",
+  "mdn_k": 5,
+  "chunk": 4,
+  "obs_extra": false,
+  "no_aug": false,
+  "epochs0": 150,
+  "bs": 2048,
+  "lr": 0.002,
+  "wd": 0.0001,
+  "w_chunk": 0.5,
+  "device": "cuda",
+  "seed": 0,
+  "train_data": "data/expert_train.pt",
+  "val_data": "data/expert_val.pt",
+  "plan_restarts": 4,
+  "plan_rounds": 4,
+  "plan_iters": 80,
+  "plan_energy": null,
+  "variants": [
+   "base",
+   "smooth1",
+   "smooth2",
+   "weak",
+   "weakest"
+  ],
+  "n_train": 600,
+  "n_val": 100,
+  "epochs": 150,
+  "n_monitor": 128,
+  "out": "results2/quality_sweep"
+ },
+ "stay": 49.831295013427734,
+ "ref": 117.03034973144531,
+ "rows": [
+  {
+   "variant": "base",
+   "plan_energy": 0.5,
+   "restarts": 4,
+   "rounds": 4,
+   "iters": 80,
+   "plan_s": 24.149558544158936,
+   "expert_train_return": 117.125732421875,
+   "student_monitor": 65.61607360839844,
+   "student_norm": 0.2518080174922943,
+   "student_over_own_expert": 0.5602191090583801
+  },
+  {
+   "variant": "smooth1",
+   "plan_energy": 1.0,
+   "restarts": 4,
+   "rounds": 4,
+   "iters": 80,
+   "plan_s": 22.798335075378418,
+   "expert_train_return": 117.57411193847656,
+   "student_monitor": 68.03627014160156,
+   "student_norm": 0.2889155447483063,
+   "student_over_own_expert": 0.5786671042442322
+  },
+  {
+   "variant": "smooth2",
+   "plan_energy": 2.0,
+   "restarts": 4,
+   "rounds": 4,
+   "iters": 80,
+   "plan_s": 23.300068140029907,
+   "expert_train_return": 116.878173828125,
+   "student_monitor": 65.01822662353516,
+   "student_norm": 0.2466278374195099,
+   "student_over_own_expert": 0.5562905669212341
+  },
+  {
+   "variant": "weak",
+   "plan_energy": 0.5,
+   "restarts": 1,
+   "rounds": 1,
+   "iters": 20,
+   "plan_s": 13.097172737121582,
+   "expert_train_return": 99.49042510986328,
+   "student_monitor": 59.735836029052734,
+   "student_norm": 0.1498292088508606,
+   "student_over_own_expert": 0.6004179120063782
+  },
+  {
+   "variant": "weakest",
+   "plan_energy": 0.5,
+   "restarts": 1,
+   "rounds": 1,
+   "iters": 5,
+   "plan_s": 12.296652793884277,
+   "expert_train_return": 92.2697982788086,
+   "student_monitor": 54.18874740600586,
+   "student_norm": 0.06765502691268921,
+   "student_over_own_expert": 0.5872858762741089
+  }
+ ]
+}
