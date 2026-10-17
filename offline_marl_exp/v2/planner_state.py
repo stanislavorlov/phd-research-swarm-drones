@@ -53,7 +53,7 @@ def heuristic_init_arrays(users, uav0, cfg: EnvConfig):
             p[r] = np.clip(p[r] + d, 0, cfg.world)
     return torch.tensor(out)
 
-
+@torch.enable_grad()
 def plan_from_state(users, uav0, ch0, cfg: EnvConfig, restarts=4, rounds=4, adam_iters=80, lr=0.08,
                     rng_seed=0, device="cpu"):
     """
