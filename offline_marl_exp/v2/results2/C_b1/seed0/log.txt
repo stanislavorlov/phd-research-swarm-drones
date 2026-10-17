@@ -1,0 +1,66 @@
+== C_b1 seed 0  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 1}  device=cuda  args={'k': 6.0, 'd': 128, 'head': 'mdn', 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 1, 'no_aug': False, 'epochs0': 300, 'bs': 2048, 'lr': 0.002, 'wd': 0.0001, 'w_chunk': 0.5, 'device': 'cuda', 'seed': 0, 'train_data': 'data/expert_train.pt', 'val_data': 'data/expert_val.pt', 'plan_restarts': 4, 'plan_rounds': 4, 'plan_iters': 80, 'plan_energy': None, 'name': 'C_b1', 'out': 'results2', 'rounds': 8, 'scen': 256, 'epochs_round': 30, 'beta0': 0.5, 'noise': 0.05, 'n_monitor': 128, 'n_final': 256, 'final': False, 'smoke': False, 'force': False}
+round-0 rows: train 96000  val 16000  (1023s)
+monitor refs: stay-put 49.83  expert 117.03  (425s)
+-- round 0: BC 300 epochs
+    ep    1/300  loss   2.6409 | EMA train mse0 0.1586 acc 0.812 | val mse0 0.1576 acc 0.802 | 3s
+    ep   30/300  loss  -0.4139 | EMA train mse0 0.0958 acc 0.879 | val mse0 0.0948 acc 0.869 | 49s
+    ep   60/300  loss  -0.7319 | EMA train mse0 0.0921 acc 0.880 | val mse0 0.0888 acc 0.869 | 97s
+    ep   90/300  loss  -0.7569 | EMA train mse0 0.0925 acc 0.881 | val mse0 0.0868 acc 0.870 | 146s
+    ep  120/300  loss  -0.9398 | EMA train mse0 0.0913 acc 0.881 | val mse0 0.0860 acc 0.869 | 195s
+    ep  150/300  loss  -1.0187 | EMA train mse0 0.0908 acc 0.882 | val mse0 0.0868 acc 0.868 | 245s
+    ep  180/300  loss  -1.0835 | EMA train mse0 0.0909 acc 0.882 | val mse0 0.0872 acc 0.869 | 294s
+    ep  210/300  loss  -1.1324 | EMA train mse0 0.0908 acc 0.883 | val mse0 0.0879 acc 0.869 | 342s
+    ep  240/300  loss  -1.1139 | EMA train mse0 0.0903 acc 0.883 | val mse0 0.0885 acc 0.869 | 390s
+    ep  270/300  loss  -1.1431 | EMA train mse0 0.0904 acc 0.883 | val mse0 0.0895 acc 0.869 | 438s
+    ep  300/300  loss  -1.2349 | EMA train mse0 0.0904 acc 0.883 | val mse0 0.0890 acc 0.869 | 528s
+[round 0] closed-loop 82.28  expert-normalised 0.486  val mse0 0.0890 acc 0.869
+-- round 1: collected 40960 rows  beta 0.500  mixed-rollout return 115.69  plan 32.5s/step  total 835s
+    ep    1/30  loss  -0.9734 | EMA train mse0 0.0952 acc 0.885 | val mse0 0.0892 acc 0.867 | 3s
+    ep   10/30  loss  -0.9658 | EMA train mse0 0.0953 acc 0.885 | val mse0 0.0889 acc 0.867 | 33s
+    ep   20/30  loss  -1.1005 | EMA train mse0 0.0946 acc 0.885 | val mse0 0.0890 acc 0.868 | 94s
+    ep   30/30  loss  -0.9734 | EMA train mse0 0.0949 acc 0.885 | val mse0 0.0895 acc 0.868 | 126s
+[round 1] closed-loop 83.72  expert-normalised 0.503  val mse0 0.0895 acc 0.868  {'beta': 0.5, 'collect_return': 115.68966674804688}
+-- round 2: collected 40960 rows  beta 0.250  mixed-rollout return 107.73  plan 26.3s/step  total 685s
+    ep    1/30  loss  -0.7813 | EMA train mse0 0.1033 acc 0.885 | val mse0 0.0898 acc 0.868 | 2s
+    ep   10/30  loss  -0.8837 | EMA train mse0 0.1013 acc 0.886 | val mse0 0.0899 acc 0.869 | 48s
+    ep   20/30  loss  -0.9179 | EMA train mse0 0.1014 acc 0.887 | val mse0 0.0895 acc 0.869 | 103s
+    ep   30/30  loss  -0.9290 | EMA train mse0 0.1025 acc 0.887 | val mse0 0.0893 acc 0.869 | 224s
+[round 2] closed-loop 96.58  expert-normalised 0.688  val mse0 0.0893 acc 0.869  {'beta': 0.25, 'collect_return': 107.72594451904297}
+-- round 3: collected 40960 rows  beta 0.125  mixed-rollout return 105.93  plan 18.9s/step  total 569s
+    ep    1/30  loss  -0.8754 | EMA train mse0 0.1029 acc 0.884 | val mse0 0.0916 acc 0.869 | 4s
+    ep   10/30  loss  -0.8211 | EMA train mse0 0.1034 acc 0.885 | val mse0 0.0910 acc 0.870 | 57s
+    ep   20/30  loss  -0.8276 | EMA train mse0 0.1030 acc 0.886 | val mse0 0.0908 acc 0.869 | 105s
+    ep   30/30  loss  -1.0219 | EMA train mse0 0.1020 acc 0.886 | val mse0 0.0911 acc 0.870 | 180s
+[round 3] closed-loop 95.98  expert-normalised 0.682  val mse0 0.0911 acc 0.870  {'beta': 0.125, 'collect_return': 105.93473815917969}
+-- round 4: collected 40960 rows  beta 0.062  mixed-rollout return 100.24  plan 18.0s/step  total 560s
+    ep    1/30  loss  -0.7376 | EMA train mse0 0.1119 acc 0.872 | val mse0 0.0927 acc 0.870 | 4s
+    ep   10/30  loss  -0.7635 | EMA train mse0 0.1139 acc 0.872 | val mse0 0.0922 acc 0.870 | 65s
+    ep   20/30  loss  -0.7598 | EMA train mse0 0.1130 acc 0.872 | val mse0 0.0920 acc 0.870 | 121s
+    ep   30/30  loss  -0.8161 | EMA train mse0 0.1125 acc 0.872 | val mse0 0.0925 acc 0.870 | 207s
+[round 4] closed-loop 98.35  expert-normalised 0.716  val mse0 0.0925 acc 0.870  {'beta': 0.0625, 'collect_return': 100.23705291748047}
+-- round 5: collected 40960 rows  beta 0.031  mixed-rollout return 101.88  plan 13.6s/step  total 304s
+    ep    1/30  loss  -0.6896 | EMA train mse0 0.1147 acc 0.864 | val mse0 0.0937 acc 0.869 | 5s
+    ep   10/30  loss  -0.8287 | EMA train mse0 0.1153 acc 0.866 | val mse0 0.0933 acc 0.869 | 59s
+    ep   20/30  loss  -0.8489 | EMA train mse0 0.1158 acc 0.866 | val mse0 0.0937 acc 0.869 | 119s
+    ep   30/30  loss  -0.7637 | EMA train mse0 0.1148 acc 0.867 | val mse0 0.0932 acc 0.869 | 202s
+[round 5] closed-loop 99.13  expert-normalised 0.724  val mse0 0.0932 acc 0.869  {'beta': 0.03125, 'collect_return': 101.8779067993164}
+-- round 6: collected 40960 rows  beta 0.016  mixed-rollout return 102.22  plan 14.6s/step  total 488s
+    ep    1/30  loss  -0.7977 | EMA train mse0 0.1151 acc 0.867 | val mse0 0.0936 acc 0.870 | 7s
+    ep   10/30  loss  -0.8083 | EMA train mse0 0.1167 acc 0.867 | val mse0 0.0954 acc 0.869 | 66s
+    ep   20/30  loss  -0.8217 | EMA train mse0 0.1175 acc 0.867 | val mse0 0.0948 acc 0.869 | 140s
+    ep   30/30  loss  -0.8124 | EMA train mse0 0.1183 acc 0.867 | val mse0 0.0954 acc 0.869 | 216s
+[round 6] closed-loop 101.92  expert-normalised 0.768  val mse0 0.0954 acc 0.869  {'beta': 0.015625, 'collect_return': 102.22428131103516}
+-- round 7: collected 40960 rows  beta 0.008  mixed-rollout return 103.30  plan 11.6s/step  total 463s
+    ep    1/30  loss  -0.8237 | EMA train mse0 0.1202 acc 0.867 | val mse0 0.0953 acc 0.870 | 7s
+    ep   10/30  loss  -0.7161 | EMA train mse0 0.1209 acc 0.868 | val mse0 0.0960 acc 0.868 | 69s
+    ep   20/30  loss  -0.8253 | EMA train mse0 0.1201 acc 0.869 | val mse0 0.0956 acc 0.869 | 214s
+    ep   30/30  loss  -0.8914 | EMA train mse0 0.1198 acc 0.869 | val mse0 0.0961 acc 0.869 | 292s
+[round 7] closed-loop 102.81  expert-normalised 0.779  val mse0 0.0961 acc 0.869  {'beta': 0.0078125, 'collect_return': 103.29560089111328}
+-- round 8: collected 40960 rows  beta 0.004  mixed-rollout return 102.89  plan 11.7s/step  total 288s
+    ep    1/30  loss  -0.7672 | EMA train mse0 0.1214 acc 0.867 | val mse0 0.0955 acc 0.869 | 9s
+    ep   10/30  loss  -0.7084 | EMA train mse0 0.1226 acc 0.867 | val mse0 0.0965 acc 0.868 | 73s
+    ep   20/30  loss  -0.7482 | EMA train mse0 0.1211 acc 0.868 | val mse0 0.0966 acc 0.867 | 215s
+    ep   30/30  loss  -0.7353 | EMA train mse0 0.1213 acc 0.868 | val mse0 0.0963 acc 0.867 | 279s
+[round 8] closed-loop 103.84  expert-normalised 0.793  val mse0 0.0963 acc 0.867  {'beta': 0.00390625, 'collect_return': 102.89167785644531}
+best round by monitor: 8  norm 0.793
+wrote results2/C_b1/seed0/summary.json
