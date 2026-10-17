@@ -152,7 +152,7 @@ def train_student(model, ema, rows: Rows, val: Rows, epochs, dev, bs=2048, lr=2e
                     pe.mul_(dcy).add_(p.detach(), alpha=1 - dcy)
         if (ep + 1) % log_every == 0 or ep == 0 or ep + 1 == epochs:
             tr, va = eval_rows(ema, sub, dev), eval_rows(ema, val_d, dev)
-            log(f"    ep {ep+1:4d}/{epochs}  loss {float(loss):8.4f} | EMA train mse0 {tr['mse0']:.4f} acc {tr['acc']:.3f} | "
+            log(f"    ep {ep+1:4d}/{epochs}  loss {float(loss.detach()):8.4f} | EMA train mse0 {tr['mse0']:.4f} acc {tr['acc']:.3f} | "
                 f"val mse0 {va['mse0']:.4f} acc {va['acc']:.3f} | {time.time()-t0:.0f}s")
     return ema
 
@@ -186,6 +186,8 @@ def add_student_args(ap):
     ap.add_argument("--mdn_k", type=int, default=5)
     ap.add_argument("--chunk", type=int, default=1, help="1 = off; H>1 adds an auxiliary head for the next H-1 plan steps")
     ap.add_argument("--obs_extra", action="store_true", help="previous displacement + extrapolated user positions")
+    ap.add_argument("--k_a", type=float, default=-1.0, help="separate radius for other UAVs (-1 = same as --k, which then governs users)")
+    ap.add_argument("--bcast", type=int, default=0, choices=[0, 1, 2], help="global broadcast: 1 = UAVs per channel, 2 = + user distance rings")
     ap.add_argument("--no_aug", action="store_true")
     ap.add_argument("--epochs0", type=int, default=150)
     ap.add_argument("--bs", type=int, default=2048)
@@ -203,11 +205,17 @@ def add_student_args(ap):
 
 
 def student_opts(a):
-    return dict(k=a.k, d=a.d, mdn_k=(a.mdn_k if a.head == "mdn" else 0), chunk=a.chunk, obs_extra=bool(a.obs_extra))
+    return dict(k=a.k, d=a.d, mdn_k=(a.mdn_k if a.head == "mdn" else 0), chunk=a.chunk, obs_extra=bool(a.obs_extra),
+                k_a=a.k_a, bcast=a.bcast)
+
+
+def cfg_from_opts(opts) -> EnvConfig:
+    """Env config matching a student's observation layout (old checkpoints lack k_a / bcast: defaults apply)."""
+    return EnvConfig(k=opts["k"], obs_extra=opts["obs_extra"], k_a=opts.get("k_a", -1.0), bcast=opts.get("bcast", 0))
 
 
 def make_student(opts) -> StudentActor:
-    cfg = EnvConfig(k=opts["k"], obs_extra=opts["obs_extra"])
+    cfg = cfg_from_opts(opts)
     return StudentActor(cfg, d=opts["d"], mdn_k=opts["mdn_k"], chunk=opts["chunk"])
 
 
@@ -218,4 +226,4 @@ def save_student(path, model, opts):
 def load_student(path):
     ck = torch.load(path, weights_only=False)
     m = make_student(ck["opts"]); m.load_state_dict(ck["state"])
-    return m.eval(), EnvConfig(k=ck["opts"]["k"], obs_extra=ck["opts"]["obs_extra"])
+    return m.eval(), cfg_from_opts(ck["opts"])

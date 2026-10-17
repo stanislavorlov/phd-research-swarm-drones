@@ -88,3 +88,11 @@ defined as in v2: the arms differ only in the critic's attention mask.
 * The monitor seeds (700000..) are used for round selection, so monitor numbers are optimistic; `--final` numbers are not.
 * `--obs_extra` changes the observation size, so its checkpoints are not interchangeable with the old `bc_seed*.pt` actors.
 * `--plan_energy` in `student.py` only changes DAgger labels; use `quality_sweep.py` for the energy-price experiment.
+
+## 7. Split radius and global broadcast (v4 additions)
+New flags (defaults reproduce everything above): `--k_a R` gives the other-UAV set its own radius (`--k` then governs users only);
+`--bcast 1` adds the per-channel count of ALL other UAVs; `--bcast 2` also adds the share of ALL users in 4 distance rings
+(<5, 5-10, 10-15, >=15). `bash scripts/run_v4.sh` launches B_uinf, B_ainf, C_b1, C_b2 (3 seeds each, A7 recipe);
+compare with `python summarize.py --names A7 A8_kinf B_uinf B_ainf C_b1 C_b2 --baseline A7`.
+Reading: B_uinf vs A7 = value of seeing distant USERS; B_ainf vs A7 = value of seeing distant UAVs; C_b1/C_b2 vs A7 = how much of
+the gap to A8_kinf a fixed-size broadcast recovers. Tests: `python -m pytest tests -x -q` (now 20 tests).

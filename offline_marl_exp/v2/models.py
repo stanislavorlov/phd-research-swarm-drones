@@ -41,7 +41,9 @@ class SetEncoder(nn.Module):
 
 def dims(cfg: EnvConfig):
     ex = bool(getattr(cfg, "obs_extra", False))
-    return 2 + cfg.n_channels + 1 + (2 if ex else 0), 4 + (2 if ex else 0), 2 + cfg.n_channels
+    bc = int(getattr(cfg, "bcast", 0))
+    sd = 2 + cfg.n_channels + 1 + (cfg.n_channels if bc >= 1 else 0) + (4 if bc >= 2 else 0) + (2 if ex else 0)
+    return sd, 4 + (2 if ex else 0), 2 + cfg.n_channels
 
 
 class Actor(nn.Module):

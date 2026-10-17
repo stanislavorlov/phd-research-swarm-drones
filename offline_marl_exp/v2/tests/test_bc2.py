@@ -127,3 +127,44 @@ def test_train_and_dagger_smoke():
     assert len(new) == 2 * N * T and new.a.shape[1:] == (2, 2) and np.isfinite(ret)
     assert not new.m[:, 1][-2 * N:].any()                      # last step has no step t+1 in the plan
     both = Rows.cat([rows, new]); assert len(both) == len(rows) + len(new)
+
+
+def test_split_radius_masks():
+    cfg = replace(SMALL, k=4.0, k_a=1000.0)
+    env = CommEnv(cfg, SEEDS); o = env.reset()
+    N = cfg.n_agents
+    d_u = (env.users_traj[:, 0].unsqueeze(1) - env.uav.unsqueeze(2)).norm(dim=-1)
+    assert torch.equal(o.um, d_u <= 4.0)                                             # users: radius k
+    assert torch.equal(o.am, ~torch.eye(N, dtype=torch.bool).expand(env.B, N, N))    # UAVs: everyone but self
+    o2 = CommEnv(replace(SMALL, k=4.0), SEEDS).reset()                               # k_a unset => same radius k
+    d_a = (env.uav.unsqueeze(1) - env.uav.unsqueeze(2)).norm(dim=-1)
+    assert torch.equal(o2.am, (d_a <= 4.0) & ~torch.eye(N, dtype=torch.bool))
+
+
+def test_bcast_features_and_dims():
+    N, C = SMALL.n_agents, SMALL.n_channels
+    for bc, extra in [(1, False), (2, False), (2, True)]:
+        cfg = replace(SMALL, bcast=bc, obs_extra=extra)
+        env = CommEnv(cfg, SEEDS); o = env.reset()
+        assert o.sf.shape[-1] == dims(cfg)[0]
+        b0 = 2 + C + 1                                                   # first broadcast column
+        cnt = o.sf[..., b0:b0 + C]
+        assert torch.allclose(cnt.sum(-1), torch.full((env.B, N), (N - 1) / N))      # all other UAVs, once each
+        own = torch.nn.functional.one_hot(env.ch, C).float()
+        tot = torch.nn.functional.one_hot(env.ch, C).float().sum(1, keepdim=True)    # [B,1,C]
+        assert torch.allclose(cnt * N + own, tot.expand(-1, N, -1))                  # counts + self == channel totals
+        if bc >= 2:
+            rings = o.sf[..., b0 + C:b0 + C + 4]
+            assert torch.allclose(rings.sum(-1), torch.ones(env.B, N), atol=1e-5)
+        if extra:
+            assert torch.all(o.sf[..., -2:] == 0)                        # prev displacement still the last two columns
+
+
+def test_bcast_augment_invariance():
+    cfg = replace(SMALL, bcast=2, obs_extra=True)
+    env = CommEnv(cfg, SEEDS); env.reset()
+    env.step(torch.randn(env.B, cfg.n_agents, 2), env.ch)
+    o = env.obs(cfg.k).flat(); a = torch.randn(o.sf.shape[0], 2, 2)
+    o2, _ = augment2(o, a, torch.Generator().manual_seed(5), True)
+    b0, C = 2 + cfg.n_channels + 1, cfg.n_channels
+    assert torch.equal(o.sf[:, b0:b0 + C + 4], o2.sf[:, b0:b0 + C + 4])              # broadcast columns untouched

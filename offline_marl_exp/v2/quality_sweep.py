@@ -25,7 +25,7 @@ from expert import replay_returns
 from planner_state import plan_from_state
 from commenv import CommEnv
 import bc2
-from bc2 import expert_rows, train_student, closed_loop, expert_returns_on, add_student_args, student_opts, make_student
+from bc2 import expert_rows, train_student, closed_loop, expert_returns_on, add_student_args, student_opts, make_student, cfg_from_opts
 
 VARIANTS = dict(base=(0.5, 4, 4, 80), smooth1=(1.0, 4, 4, 80), smooth2=(2.0, 4, 4, 80),
                 weak=(0.5, 1, 1, 20), weakest=(0.5, 1, 1, 5))
@@ -55,8 +55,8 @@ def main():
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
     dev = torch.device(a.device)
-    cfg = EnvConfig(k=a.k, obs_extra=bool(a.obs_extra))
     opts = student_opts(a)
+    cfg = cfg_from_opts(opts)
     mon = list(range(700_000, 700_000 + a.n_monitor))
     r_stay = returns(StayPut(), mon, cfg)[0]
     r_ref = expert_returns_on(mon, cfg, cfg, dict(restarts=4, rounds=4, adam_iters=80, device=a.device))

@@ -42,6 +42,7 @@ def main():
     ap.add_argument("--n_final", type=int, default=256)
     ap.add_argument("--final", action="store_true")
     ap.add_argument("--smoke", action="store_true", help="tiny end-to-end check (seconds); results are meaningless")
+    ap.add_argument("--force", action="store_true", help="ignore the run lock / existing summary.json")
     a = ap.parse_args()
 
     if a.smoke:
@@ -49,6 +50,24 @@ def main():
         a.plan_restarts, a.plan_rounds, a.plan_iters, a.final = 2, 1, 10, False
     run_dir = os.path.join(a.out, a.name, f"seed{a.seed}")
     os.makedirs(run_dir, exist_ok=True)
+    # one process per (name, seed): refuse to start if a live process holds the lock or the run already finished
+    lock = os.path.join(run_dir, ".lock")
+    if not a.force:
+        if os.path.exists(os.path.join(run_dir, "summary.json")):
+            raise SystemExit(f"{run_dir} already has summary.json -- refusing to run again (use --force to overwrite)")
+        if os.path.exists(lock):
+            try:
+                pid = int(open(lock).read().strip()); os.kill(pid, 0); alive = True
+            except PermissionError:
+                alive = True                      # process exists, owned by someone else
+            except (ValueError, ProcessLookupError, OSError):
+                alive = False                     # stale or unreadable lock
+            if alive:
+                raise SystemExit(f"{run_dir} is already being run by pid {pid} -- refusing to start a second copy")
+    with open(lock, "w") as f:
+        f.write(str(os.getpid()))
+    import atexit
+    atexit.register(lambda: os.path.exists(lock) and os.remove(lock))
     logf = open(os.path.join(run_dir, "log.txt"), "a")
 
     def log(*s):
@@ -58,7 +77,7 @@ def main():
     torch.manual_seed(a.seed); np.random.seed(a.seed)
     dev = torch.device(a.device)
     opts = student_opts(a)
-    cfg = EnvConfig(k=a.k, obs_extra=bool(a.obs_extra))
+    cfg = bc2.cfg_from_opts(opts)
     cfg_plan = replace(cfg, energy=a.plan_energy) if a.plan_energy is not None else cfg
     if a.plan_energy is not None and a.plan_energy != cfg.energy and a.rounds > 0:
         log("WARNING: --plan_energy != env energy: DAgger labels use the planner price but round-0 data (data/*.pt) were "

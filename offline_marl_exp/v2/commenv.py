@@ -44,6 +44,12 @@ class EnvConfig:
     # opt-in (default False keeps every v2 result reproducible): add the UAV's own previous displacement to the
     # self features and the user position extrapolated EXTRAP_STEPS steps ahead to the user features.
     obs_extra: bool = False
+    # opt-in (defaults reproduce every earlier result): k_a >= 0 gives the OTHER-UAV set its own radius (k then only
+    # governs users); bcast=1 appends the per-channel count of ALL other UAVs (visible or not, / N) to the self features,
+    # bcast=2 additionally appends the share of ALL users in 4 distance rings around the UAV (<5,5-10,10-15,>=15 world
+    # units). Both are fixed-size, rotation-invariant global summaries (a cheap broadcast), not entity lists.
+    k_a: float = -1.0
+    bcast: int = 0
 
     def with_k(self, k):
         return replace(self, k=float(k))
@@ -107,6 +113,7 @@ def gen_scenario(seed: int, cfg: EnvConfig):
 
 
 EXTRAP_STEPS = 4.0
+RING_EDGES = (5.0, 10.0, 15.0)      # bcast=2 user-distance rings
 
 
 class Obs(NamedTuple):
@@ -171,9 +178,19 @@ class CommEnv:
         oh = F.one_hot(self.ch, cfg.n_channels).float()                   # [B,N,C]
         rel_a = self.uav.unsqueeze(1) - self.uav.unsqueeze(2)             # [B,N,N,2] (i,j)=pos_j-pos_i
         eye = torch.eye(N, dtype=torch.bool)
-        am = (rel_a.norm(dim=-1) <= k) & ~eye
+        ka = k if cfg.k_a < 0 else cfg.k_a
+        am = (rel_a.norm(dim=-1) <= ka) & ~eye
         af = torch.cat([rel_a / sc, oh.unsqueeze(1).expand(-1, N, -1, -1)], -1)
         sf = torch.cat([self.uav / cfg.world, oh, torch.full((B, N, 1), t / cfg.T)], -1)
+        # column order of sf: [pos(2), channel one-hot(C), t/T, bcast...(C | 4), prev displacement(2) if obs_extra]
+        if cfg.bcast >= 1:
+            sf = torch.cat([sf, (oh.sum(1, keepdim=True) - oh) / N], -1)             # other UAVs per channel, all of them
+        if cfg.bcast >= 2:
+            dist = rel_u.norm(dim=-1)                                                 # [B,N,U]
+            e = RING_EDGES
+            rings = torch.stack([dist < e[0], (dist >= e[0]) & (dist < e[1]),
+                                 (dist >= e[1]) & (dist < e[2]), dist >= e[2]], -1).float()
+            sf = torch.cat([sf, rings.sum(2) / cfg.n_users], -1)                      # [B,N,4], sums to 1
         if cfg.obs_extra:
             uf = torch.cat([uf, (rel_u + EXTRAP_STEPS * vel.unsqueeze(1)) / sc], -1)    # rel. pos. 4 steps ahead
             sf = torch.cat([sf, self.prev], -1)                                           # own previous displacement
