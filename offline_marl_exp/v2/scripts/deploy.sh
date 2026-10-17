@@ -10,12 +10,12 @@ SSH="ssh -p $PORT -o StrictHostKeyChecking=accept-new"
 echo ">> sync $HERE -> $USER_@$IP:$RDIR"
 $SSH "$USER_@$IP" "mkdir -p $RDIR"
 if command -v rsync >/dev/null && $SSH "$USER_@$IP" "command -v rsync" >/dev/null 2>&1; then
-  rsync -az --progress2 -e "$SSH" \
-    --exclude '__pycache__' --exclude '.pytest_cache' --exclude 'results2' --exclude 'results_smoke' --exclude '.git' \
+  rsync -az -e "$SSH" \
+    --exclude '__pycache__' --exclude '.pytest_cache' --exclude '/results' --exclude '/results2' --exclude '/results_smoke' --exclude '.git' \
     "$HERE/" "$USER_@$IP:$RDIR/"
 else
   echo "(rsync unavailable, falling back to tar over ssh)"
-  tar -C "$HERE" --exclude=__pycache__ --exclude=.pytest_cache --exclude=results2 --exclude=results_smoke -czf - . \
+  tar -C "$HERE" --exclude=__pycache__ --exclude=.pytest_cache --exclude=./results --exclude=./results2 --exclude=./results_smoke -czf - . \
     | $SSH "$USER_@$IP" "tar -C $RDIR -xzf -"
 fi
 echo ">> install deps"

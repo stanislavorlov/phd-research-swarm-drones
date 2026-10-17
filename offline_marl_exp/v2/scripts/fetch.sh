@@ -13,7 +13,7 @@ for d in results2 results_smoke; do
   if $SSH "$USER_@$IP" "test -d $RDIR/$d"; then
     echo ">> fetch $d"
     mkdir -p "$HERE/$d"
-    rsync -az --progress2 -e "$SSH" $EXC "$USER_@$IP:$RDIR/$d/" "$HERE/$d/"
+    rsync -az --progress -e "$SSH" $EXC "$USER_@$IP:$RDIR/$d/" "$HERE/$d/"
   fi
 done
 echo ">> done. Summarise locally:  cd $HERE && python summarize.py"
