@@ -31,6 +31,7 @@ def main():
     ap.add_argument("--n_envs", type=int, default=32)
     ap.add_argument("--lr_actor", type=float, default=1e-3)
     ap.add_argument("--critic_d", type=int, default=32)
+    ap.add_argument("--ppo_offset", type=int, default=0, help="PPO run seed = student seed + this (keep student seed + offset <= 9)")
     ap.add_argument("--init_std", type=float, default=0.2, help="exploration std of the Gaussian around the student mean")
     ap.add_argument("--critic_warmup", type=int, default=15, help="critic-only iterations before the actor is updated")
     ap.add_argument("--target_kl", type=float, default=0.03)
@@ -55,7 +56,7 @@ def main():
                 d = np.load(f); res[arm].append(float(d["returns"][-1].mean()))
                 print(f"skip {f} (exists)"); continue
             with open(os.path.join(out, f"log_{arm}_seed{s}.txt"), "w") as lg:
-                hist, diag, _ = train_mappo(cfg, actor, arm == "masked", s, ppo, ev, label=f"{a.tag}-{arm} s{s}", log=lg)
+                hist, diag, _ = train_mappo(cfg, actor, arm == "masked", s + a.ppo_offset, ppo, ev, label=f"{a.tag}-{arm} s{s}p{a.ppo_offset}", log=lg)
             its = sorted(hist)
             extra = {}
             if a.final:
