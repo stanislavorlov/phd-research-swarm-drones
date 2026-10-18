@@ -31,6 +31,9 @@ def main():
     ap.add_argument("--n_envs", type=int, default=32)
     ap.add_argument("--lr_actor", type=float, default=1e-3)
     ap.add_argument("--critic_d", type=int, default=32)
+    ap.add_argument("--init_std", type=float, default=0.2, help="exploration std of the Gaussian around the student mean")
+    ap.add_argument("--critic_warmup", type=int, default=15, help="critic-only iterations before the actor is updated")
+    ap.add_argument("--target_kl", type=float, default=0.03)
     ap.add_argument("--n_eval", type=int, default=128)
     ap.add_argument("--tag", default="online")
     ap.add_argument("--out", default="results2/online")
@@ -40,13 +43,14 @@ def main():
     out = os.path.join(a.out, a.tag); os.makedirs(out, exist_ok=True)
     ev = list(range(700_000, 700_000 + a.n_eval))
     fin = list(range(800_000, 800_000 + a.n_final))
-    ppo = PPOConfig(iters=a.iters, n_envs=a.n_envs, lr_actor=a.lr_actor, critic_d=a.critic_d)
+    ppo = PPOConfig(iters=a.iters, n_envs=a.n_envs, lr_actor=a.lr_actor, critic_d=a.critic_d,
+                    critic_warmup=a.critic_warmup, target_kl=a.target_kl)
     res = {arm: [] for arm in a.arms}
     for s in a.seeds:
         for arm in a.arms:
             f = os.path.join(out, f"run_{arm}_seed{s}.npz")
             actor, cfg = load_student(a.ckpt.format(s=s))
-            actor.log_std.data.fill_(float(np.log(0.2)))             # same exploration scale for every arm
+            actor.log_std.data.fill_(float(np.log(a.init_std)))             # same exploration scale for every arm
             if os.path.exists(f):
                 d = np.load(f); res[arm].append(float(d["returns"][-1].mean()))
                 print(f"skip {f} (exists)"); continue
