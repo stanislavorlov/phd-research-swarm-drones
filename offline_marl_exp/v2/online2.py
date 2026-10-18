@@ -19,7 +19,7 @@ from commenv import StayPut
 from evalproto import returns, seed_level_ci, bootstrap_ci
 from models import NetPolicy
 from mappo import PPOConfig, train_mappo
-from bc2 import load_student
+from bc2 import load_student, make_student
 
 
 def main():
@@ -31,6 +31,7 @@ def main():
     ap.add_argument("--n_envs", type=int, default=32)
     ap.add_argument("--lr_actor", type=float, default=1e-3)
     ap.add_argument("--critic_d", type=int, default=32)
+    ap.add_argument("--scratch", action="store_true", help="random-init actor (same architecture as the checkpoint, plain Gaussian head); the checkpoint is only used for its options")
     ap.add_argument("--ppo_offset", type=int, default=0, help="PPO run seed = student seed + this (keep student seed + offset <= 9)")
     ap.add_argument("--init_std", type=float, default=0.2, help="exploration std of the Gaussian around the student mean")
     ap.add_argument("--critic_warmup", type=int, default=15, help="critic-only iterations before the actor is updated")
@@ -51,6 +52,10 @@ def main():
         for arm in a.arms:
             f = os.path.join(out, f"run_{arm}_seed{s}.npz")
             actor, cfg = load_student(a.ckpt.format(s=s))
+            if a.scratch:                                            # no offline pre-training: PPO from random weights
+                opts = dict(torch.load(a.ckpt.format(s=s), weights_only=False)["opts"], mdn_k=0, chunk=1)
+                torch.manual_seed(7000 + s)
+                actor = make_student(opts)
             actor.log_std.data.fill_(float(np.log(a.init_std)))             # same exploration scale for every arm
             if os.path.exists(f):
                 d = np.load(f); res[arm].append(float(d["returns"][-1].mean()))
