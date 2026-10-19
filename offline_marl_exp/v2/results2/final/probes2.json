@@ -1,0 +1,353 @@
+{
+ "stay_put": {
+  "name": "stay-put",
+  "ret": 52.527183532714844,
+  "ret_sd": 12.891666412353516,
+  "move": 0.0,
+  "switch_all": 0.0,
+  "switch_t1": 0.0,
+  "switch_t2plus": 0.0,
+  "rate": 2.6263591051101685,
+  "rate_q10": 0.9684931039810181,
+  "rate_q50": 2.2511727809906006,
+  "rate_q90": 4.875352382659912,
+  "outage": 0.112451171875,
+  "cochan": 1.8125,
+  "serv_dist": 3.593125319480896,
+  "swarm_spread": 5.768189907073975,
+  "switch_profile": [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ]
+ },
+ "results2/A7/seed0/best.pt": {
+  "name": "results2/A7/seed0/best.pt",
+  "ret": 80.1181869506836,
+  "ret_sd": 19.426429748535156,
+  "move": 0.3247194290161133,
+  "switch_all": 0.012109375,
+  "switch_t1": 0.130859375,
+  "switch_t2plus": 0.005859375,
+  "rate": 4.110434138774872,
+  "rate_q10": 1.5096899271011353,
+  "rate_q50": 3.924990653991699,
+  "rate_q90": 7.027042865753174,
+  "outage": 0.03896484375,
+  "cochan": 2.7390625,
+  "serv_dist": 2.668008589744568,
+  "swarm_spread": 7.546708655357361,
+  "switch_profile": [
+   0.1309,
+   0.0332,
+   0.0293,
+   0.0117,
+   0.0059,
+   0.0078,
+   0.0078,
+   0.0059,
+   0.0059,
+   0.002,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.002,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ]
+ },
+ "results2/A7/seed0/best.pt::channels": {
+  "accuracy_all": {
+   "causal": {
+    "sensed": 0.6297,
+    "sensed_k": 0.4812,
+    "bcast": 0.4815,
+    "stay": 0.4091,
+    "rand": 0.3467
+   },
+   "oracle": {
+    "sensed": 0.6383,
+    "sensed_k": 0.4817,
+    "bcast": 0.4799,
+    "stay": 0.4091,
+    "rand": 0.3405
+   }
+  },
+  "accuracy_serving": {
+   "causal": {
+    "sensed": 0.7658,
+    "sensed_k": 0.5634,
+    "bcast": 0.5776,
+    "stay": 0.4409,
+    "rand": 0.3392
+   },
+   "oracle": {
+    "sensed": 0.7812,
+    "sensed_k": 0.5655,
+    "bcast": 0.5778,
+    "stay": 0.4409,
+    "rand": 0.3352
+   }
+  },
+  "headroom_per_episode": {
+   "joint_optimal": 37.622,
+   "unilateral_best": 21.244,
+   "note": "per-episode sum over T of the per-state gain; 'unilateral' is the v4_probes quantity"
+  }
+ },
+ "results2/C_b1/seed0/best.pt": {
+  "name": "results2/C_b1/seed0/best.pt",
+  "ret": 105.06694793701172,
+  "ret_sd": 19.383827209472656,
+  "move": 0.3370382785797119,
+  "switch_all": 0.0326171875,
+  "switch_t1": 0.197265625,
+  "switch_t2plus": 0.023951480263157895,
+  "rate": 5.3649524569511415,
+  "rate_q10": 1.707747220993042,
+  "rate_q50": 5.778158187866211,
+  "rate_q90": 8.359302520751953,
+  "outage": 0.039697265625,
+  "cochan": 2.93046875,
+  "serv_dist": 2.6689934611320494,
+  "swarm_spread": 7.47498733997345,
+  "switch_profile": [
+   0.1973,
+   0.1855,
+   0.0879,
+   0.0391,
+   0.0254,
+   0.0098,
+   0.0117,
+   0.0176,
+   0.0156,
+   0.0117,
+   0.0078,
+   0.0098,
+   0.0078,
+   0.0039,
+   0.0039,
+   0.0059,
+   0.0059,
+   0.002,
+   0.0,
+   0.0039
+  ]
+ },
+ "results2/C_b1/seed0/best.pt::channels": {
+  "accuracy_all": {
+   "causal": {
+    "sensed": 0.4306,
+    "sensed_k": 0.3276,
+    "bcast": 0.3908,
+    "stay": 0.7296,
+    "rand": 0.3447
+   },
+   "oracle": {
+    "sensed": 0.4606,
+    "sensed_k": 0.3376,
+    "bcast": 0.4119,
+    "stay": 0.7296,
+    "rand": 0.3476
+   }
+  },
+  "accuracy_serving": {
+   "causal": {
+    "sensed": 0.6188,
+    "sensed_k": 0.455,
+    "bcast": 0.5561,
+    "stay": 0.687,
+    "rand": 0.3444
+   },
+   "oracle": {
+    "sensed": 0.6592,
+    "sensed_k": 0.4699,
+    "bcast": 0.5841,
+    "stay": 0.687,
+    "rand": 0.3393
+   }
+  },
+  "headroom_per_episode": {
+   "joint_optimal": 13.534,
+   "unilateral_best": 11.225,
+   "note": "per-episode sum over T of the per-state gain; 'unilateral' is the v4_probes quantity"
+  }
+ },
+ "results2/B_ainf/seed0/best.pt": {
+  "name": "results2/B_ainf/seed0/best.pt",
+  "ret": 110.97653198242188,
+  "ret_sd": 14.815301895141602,
+  "move": 0.34637951850891113,
+  "switch_all": 0.0408203125,
+  "switch_t1": 0.26171875,
+  "switch_t2plus": 0.02919407894736842,
+  "rate": 5.664071130752563,
+  "rate_q10": 2.1273183822631836,
+  "rate_q50": 6.120694160461426,
+  "rate_q90": 8.385231018066406,
+  "outage": 0.0224365234375,
+  "cochan": 2.73671875,
+  "serv_dist": 2.416185426712036,
+  "swarm_spread": 7.437358975410461,
+  "switch_profile": [
+   0.2617,
+   0.1875,
+   0.1016,
+   0.0547,
+   0.0293,
+   0.0273,
+   0.0254,
+   0.0273,
+   0.0254,
+   0.0156,
+   0.0059,
+   0.0234,
+   0.002,
+   0.0,
+   0.0078,
+   0.0098,
+   0.0078,
+   0.0039,
+   0.0,
+   0.0
+  ]
+ },
+ "results2/B_ainf/seed0/best.pt::channels": {
+  "accuracy_all": {
+   "causal": {
+    "sensed": 0.3632,
+    "sensed_k": 0.2675,
+    "bcast": 0.3189,
+    "stay": 0.8047,
+    "rand": 0.3356
+   },
+   "oracle": {
+    "sensed": 0.3993,
+    "sensed_k": 0.2776,
+    "bcast": 0.3453,
+    "stay": 0.8047,
+    "rand": 0.3336
+   }
+  },
+  "accuracy_serving": {
+   "causal": {
+    "sensed": 0.6027,
+    "sensed_k": 0.4048,
+    "bcast": 0.5233,
+    "stay": 0.751,
+    "rand": 0.3399
+   },
+   "oracle": {
+    "sensed": 0.6522,
+    "sensed_k": 0.4222,
+    "bcast": 0.5576,
+    "stay": 0.751,
+    "rand": 0.3335
+   }
+  },
+  "headroom_per_episode": {
+   "joint_optimal": 10.588,
+   "unilateral_best": 8.526,
+   "note": "per-episode sum over T of the per-state gain; 'unilateral' is the v4_probes quantity"
+  }
+ },
+ "results2/A8_kinf/seed0/best.pt": {
+  "name": "results2/A8_kinf/seed0/best.pt",
+  "ret": 111.95711517333984,
+  "ret_sd": 15.947510719299316,
+  "move": 0.3436550498008728,
+  "switch_all": 0.0353515625,
+  "switch_t1": 0.2265625,
+  "switch_t2plus": 0.02528782894736842,
+  "rate": 5.714892566204071,
+  "rate_q10": 2.1081228256225586,
+  "rate_q50": 6.254903793334961,
+  "rate_q90": 8.375186920166016,
+  "outage": 0.020263671875,
+  "cochan": 2.98671875,
+  "serv_dist": 2.40866733789444,
+  "swarm_spread": 7.375523471832276,
+  "switch_profile": [
+   0.2266,
+   0.1855,
+   0.0957,
+   0.0527,
+   0.0273,
+   0.0176,
+   0.0254,
+   0.0137,
+   0.0059,
+   0.002,
+   0.0059,
+   0.0078,
+   0.0078,
+   0.0039,
+   0.0098,
+   0.0059,
+   0.0098,
+   0.0,
+   0.0,
+   0.0039
+  ]
+ },
+ "results2/A8_kinf/seed0/best.pt::channels": {
+  "accuracy_all": {
+   "causal": {
+    "sensed": 0.3823,
+    "sensed_k": 0.3823,
+    "bcast": 0.3441,
+    "stay": 0.7868,
+    "rand": 0.3435
+   },
+   "oracle": {
+    "sensed": 0.4116,
+    "sensed_k": 0.4116,
+    "bcast": 0.3645,
+    "stay": 0.7868,
+    "rand": 0.3429
+   }
+  },
+  "accuracy_serving": {
+   "causal": {
+    "sensed": 0.6177,
+    "sensed_k": 0.6177,
+    "bcast": 0.5557,
+    "stay": 0.7405,
+    "rand": 0.3521
+   },
+   "oracle": {
+    "sensed": 0.6601,
+    "sensed_k": 0.6601,
+    "bcast": 0.5841,
+    "stay": 0.7405,
+    "rand": 0.3459
+   }
+  },
+  "headroom_per_episode": {
+   "joint_optimal": 9.753,
+   "unilateral_best": 8.014,
+   "note": "per-episode sum over T of the per-state gain; 'unilateral' is the v4_probes quantity"
+  }
+ }
+}

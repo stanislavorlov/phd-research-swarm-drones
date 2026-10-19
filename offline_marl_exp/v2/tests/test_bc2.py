@@ -168,3 +168,55 @@ def test_bcast_augment_invariance():
     o2, _ = augment2(o, a, torch.Generator().manual_seed(5), True)
     b0, C = 2 + cfg.n_channels + 1, cfg.n_channels
     assert torch.equal(o.sf[:, b0:b0 + C + 4], o2.sf[:, b0:b0 + C + 4])              # broadcast columns untouched
+
+
+def test_sensed_dims_and_equal_width_with_bcast1():
+    """bcast 1 and 3/4/5 must be the same width (C), so the broadcast-vs-sensed comparison is equal-dimension."""
+    for b in (1, 3, 4, 5):
+        cfg = replace(SMALL, bcast=b)
+        env = CommEnv(cfg, SEEDS); o = env.reset()
+        assert o.sf.shape[-1] == dims(cfg)[0], (b, o.sf.shape, dims(cfg))
+        assert dims(cfg)[0] == dims(replace(SMALL, bcast=1))[0], b
+    assert dims(replace(SMALL, bcast=2))[0] == dims(replace(SMALL, bcast=1))[0] + 4
+
+
+def test_sensed_matches_the_interference_in_link_rates():
+    """bcast=3 must be exactly log1p(co-channel power / noise)/SENSE_SCALE for the UAV's own position."""
+    from commenv import SENSE_SCALE
+    cfg = replace(SMALL, bcast=3)
+    env = CommEnv(cfg, SEEDS); o = env.reset()
+    N, C = cfg.n_agents, cfg.n_channels
+    feat = o.sf.view(len(SEEDS), N, -1)[..., 2 + C + 1:2 + C + 1 + C]
+    d2 = ((env.uav.unsqueeze(2) - env.uav.unsqueeze(1)) ** 2).sum(-1)
+    g = ((d2 + cfg.H ** 2) ** (-cfg.alpha / 2.0)).masked_fill(torch.eye(N, dtype=torch.bool), 0.0)
+    oh = torch.nn.functional.one_hot(env.ch, C).float()
+    want = torch.log1p(torch.einsum("bij,bjc->bic", g, oh) / cfg.noise) / SENSE_SCALE
+    assert torch.allclose(feat, want, atol=1e-5)
+    own = feat.gather(-1, env.ch.unsqueeze(-1)).squeeze(-1)
+    assert (own >= 0).all() and torch.isfinite(feat).all()
+
+
+def test_sensed_k_is_a_subset_and_placebo_keeps_marginals():
+    cfg3, cfg4, cfg5 = (replace(SMALL, bcast=b, k_a=3.0) for b in (3, 4, 5))
+    N, C = SMALL.n_agents, SMALL.n_channels
+    cut = slice(2 + C + 1, 2 + C + 1 + C)
+    f = lambda c: CommEnv(c, SEEDS).reset().sf.view(len(SEEDS), N, -1)[..., cut]
+    f3, f4, f5 = f(cfg3), f(cfg4), f(cfg5)
+    assert (f4 <= f3 + 1e-6).all(), "radius-restricted sensing cannot exceed sensing over all UAVs"
+    assert f4.sum() < f3.sum(), "with k_a=3 the restricted feature must drop some interference"
+    assert torch.allclose(f5.sort(-1).values, f3.sort(-1).values, atol=1e-6), "placebo must keep the per-agent multiset"
+    assert not torch.allclose(f5, f3), "placebo must not be the identity permutation everywhere"
+
+
+def test_sensed_is_rotation_invariant_so_augmentation_still_applies():
+    """The feature depends only on inter-UAV distances, so the D8 augmentation stays valid."""
+    cfg = replace(SMALL, bcast=3)
+    N, C = cfg.n_agents, cfg.n_channels
+    cut = slice(2 + C + 1, 2 + C + 1 + C)
+    env = CommEnv(cfg, SEEDS); o = env.reset()
+    base = o.sf.view(len(SEEDS), N, -1)[..., cut].clone()
+    env2 = CommEnv(cfg, SEEDS); env2.reset()
+    W = cfg.world
+    env2.uav = torch.stack([W - env2.uav[..., 1], env2.uav[..., 0]], -1)              # rotate the whole swarm 90 deg
+    rot = env2.obs(cfg.k).sf.view(len(SEEDS), N, -1)[..., cut]
+    assert torch.allclose(base, rot, atol=1e-5)

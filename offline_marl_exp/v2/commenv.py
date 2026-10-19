@@ -114,6 +114,19 @@ def gen_scenario(seed: int, cfg: EnvConfig):
 
 EXTRAP_STEPS = 4.0
 RING_EDGES = (5.0, 10.0, 15.0)      # bcast=2 user-distance rings
+SENSE_SCALE = 8.0                   # bcast>=3: log1p(co-channel power / noise) is in [0, ~8] over the world diagonal
+
+
+def _permute_channels(x, seeds, t):
+    """Placebo for bcast=5: the same C values re-attached to channels in a deterministic pseudo-random order that
+    depends only on (scenario seed, agent index, step). Identical marginal distribution to bcast=3, zero information
+    about WHICH channel is quiet -- so a gain over this placebo cannot be an effect of the extra input width."""
+    B, N, C = x.shape
+    s = torch.tensor([float(v) for v in seeds], dtype=torch.float64).view(B, 1, 1)
+    i = torch.arange(N, dtype=torch.float64).view(1, N, 1)
+    c = torch.arange(C, dtype=torch.float64).view(1, 1, C)
+    key = torch.sin(s * 12.9898 + i * 78.233 + float(t) * 37.719 + c * 17.31) * 43758.5453
+    return x.gather(-1, (key - key.floor()).argsort(-1))
 
 
 class Obs(NamedTuple):
@@ -183,9 +196,21 @@ class CommEnv:
         af = torch.cat([rel_a / sc, oh.unsqueeze(1).expand(-1, N, -1, -1)], -1)
         sf = torch.cat([self.uav / cfg.world, oh, torch.full((B, N, 1), t / cfg.T)], -1)
         # column order of sf: [pos(2), channel one-hot(C), t/T, bcast...(C | 4), prev displacement(2) if obs_extra]
-        if cfg.bcast >= 1:
+        if cfg.bcast in (1, 2):
             sf = torch.cat([sf, (oh.sum(1, keepdim=True) - oh) / N], -1)             # other UAVs per channel, all of them
-        if cfg.bcast >= 2:
+        elif cfg.bcast in (3, 4, 5):
+            # Receiver-side interference feedback: co-channel power at UAV i's own position, per channel. Physically a
+            # power measurement (no communication), but informationally global -- distant co-channel UAVs still contribute.
+            # Same width (C) as the bcast=1 count, so 1 vs 3 is an equal-dimension comparison of two statistics.
+            ga = (((rel_a ** 2).sum(-1) + cfg.H ** 2) ** (-cfg.alpha / 2.0)).masked_fill(eye, 0.0)   # [B,N,N]
+            if cfg.bcast == 4:
+                ga = ga * am.to(ga.dtype)                                             # control: only UAVs inside the radius
+            co = torch.einsum("bij,bjc->bic", ga, oh)                                 # [B,N,C]
+            feat = torch.log1p(co / cfg.noise) / SENSE_SCALE                          # 0 = silent channel, ~1 = heavily used
+            if cfg.bcast == 5:
+                feat = _permute_channels(feat, self.seeds, t)                         # placebo
+            sf = torch.cat([sf, feat], -1)
+        if cfg.bcast == 2:
             dist = rel_u.norm(dim=-1)                                                 # [B,N,U]
             e = RING_EDGES
             rings = torch.stack([dist < e[0], (dist >= e[0]) & (dist < e[1]),

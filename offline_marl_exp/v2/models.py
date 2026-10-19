@@ -42,7 +42,8 @@ class SetEncoder(nn.Module):
 def dims(cfg: EnvConfig):
     ex = bool(getattr(cfg, "obs_extra", False))
     bc = int(getattr(cfg, "bcast", 0))
-    sd = 2 + cfg.n_channels + 1 + (cfg.n_channels if bc >= 1 else 0) + (4 if bc >= 2 else 0) + (2 if ex else 0)
+    # bcast 1/2 append a per-channel COUNT, 3/4/5 a per-channel sensed POWER -- both C wide; only 2 adds the 4 user rings
+    sd = 2 + cfg.n_channels + 1 + (cfg.n_channels if bc >= 1 else 0) + (4 if bc == 2 else 0) + (2 if ex else 0)
     return sd, 4 + (2 if ex else 0), 2 + cfg.n_channels
 
 
