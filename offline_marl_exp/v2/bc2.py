@@ -187,10 +187,11 @@ def add_student_args(ap):
     ap.add_argument("--chunk", type=int, default=1, help="1 = off; H>1 adds an auxiliary head for the next H-1 plan steps")
     ap.add_argument("--obs_extra", action="store_true", help="previous displacement + extrapolated user positions")
     ap.add_argument("--k_a", type=float, default=-1.0, help="separate radius for other UAVs (-1 = same as --k, which then governs users)")
-    ap.add_argument("--bcast", type=int, default=0, choices=[0, 1, 2, 3, 4, 5],
-                    help="extra per-channel features (all C wide): 1 = broadcast count of other UAVs per channel, "
+    ap.add_argument("--bcast", type=int, default=0, choices=[0, 1, 2, 3, 4, 5, 6],
+                    help="extra per-channel features (C wide unless noted): 1 = broadcast count of other UAVs per channel, "
                          "2 = + user distance rings, 3 = sensed co-channel power (all UAVs, no communication), "
-                         "4 = sensed power restricted to radius k_a (control), 5 = channel-shuffled sensed power (placebo)")
+                         "4 = sensed power restricted to radius k_a (control), 5 = channel-shuffled sensed power (placebo), "
+                         "6 = count AND sensed power together (2C wide)")
     ap.add_argument("--no_aug", action="store_true")
     ap.add_argument("--epochs0", type=int, default=150)
     ap.add_argument("--bs", type=int, default=2048)

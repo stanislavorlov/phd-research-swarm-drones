@@ -220,3 +220,16 @@ def test_sensed_is_rotation_invariant_so_augmentation_still_applies():
     env2.uav = torch.stack([W - env2.uav[..., 1], env2.uav[..., 0]], -1)              # rotate the whole swarm 90 deg
     rot = env2.obs(cfg.k).sf.view(len(SEEDS), N, -1)[..., cut]
     assert torch.allclose(base, rot, atol=1e-5)
+
+
+def test_bcast6_is_count_plus_sensed():
+    """bcast=6 must be 2C wide and carry exactly the bcast=1 block followed by the bcast=3 block."""
+    N, C = SMALL.n_agents, SMALL.n_channels
+    cfg1, cfg3, cfg6 = (replace(SMALL, bcast=b) for b in (1, 3, 6))
+    assert dims(cfg6)[0] == dims(cfg1)[0] + C
+    f = lambda c: CommEnv(c, SEEDS).reset().sf.view(len(SEEDS), N, -1)
+    s1, s3, s6 = f(cfg1), f(cfg3), f(cfg6)
+    base = 2 + C + 1
+    assert torch.allclose(s6[..., base:base + C], s1[..., base:base + C], atol=1e-6)      # the count block
+    assert torch.allclose(s6[..., base + C:base + 2 * C], s3[..., base:base + C], atol=1e-6)  # the sensed block
+    assert s6.shape[-1] == dims(cfg6)[0]
