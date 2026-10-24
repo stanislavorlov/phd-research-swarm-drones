@@ -39,6 +39,13 @@ def arm_of(path):
     return m.group(1) if m else "offline"
 
 
+def tag_of(path):
+    """results2/online/<tag>/actor_<arm>_seed<s>.pt -> '<tag>/<arm>'. Without this, a constrained run and an
+    unconstrained one both look like 'masked' and get averaged together, which hides exactly the contrast."""
+    m = re.search(r"/online/([^/]+)/actor_", path)
+    return f"{m.group(1)}/{arm_of(path)}" if m else arm_of(path)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--glob", default="results2/final/probe_*.json")
@@ -56,12 +63,12 @@ def main():
         print(f"{a.start + ' seed' + str(s) + ' (offline)':34s} " +
               " ".join(f"{base[s][k]:8.{p}f}" for k, _, p in COLS))
     for k in sorted(tuned):
-        print(f"{arm_of(k) + ' seed' + str(seed_of(k)) + ' (tuned)':34s} " +
+        print(f"{(tag_of(k) + ' s' + str(seed_of(k)))[:34]:34s} " +
               " ".join(f"{tuned[k][c]:8.{p}f}" for c, _, p in COLS))
 
     print("\npaired change, tuned - its own offline student (mean over the actors present, % in brackets):")
-    for arm in sorted({arm_of(k) for k in tuned}):
-        ks = [k for k in tuned if arm_of(k) == arm and seed_of(k) in base]
+    for arm in sorted({tag_of(k) for k in tuned}):
+        ks = [k for k in tuned if tag_of(k) == arm and seed_of(k) in base]
         if not ks:
             continue
         print(f"  [{arm}, n={len(ks)}]")

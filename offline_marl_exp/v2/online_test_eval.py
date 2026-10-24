@@ -28,6 +28,7 @@ from bc2 import load_student, make_student, cfg_from_opts
 DEFAULT_MAP = [
     ("online_C_b1", "results2/C_b1/seed{s}/best.pt", False),
     ("online_A7",   "results2/A7/seed{s}/best.pt",   False),
+    ("con_",        "results2/A7/seed{s}/best.pt",   False),   # constrained online runs (section 6)
     ("scratch_",    "results2/A7/seed{s}/best.pt",   True),
     ("sw_",         "results2/A7/seed{s}/best.pt",   True),
 ]
@@ -81,21 +82,23 @@ def main():
         raise SystemExit(f"no actor_*.pt under {a.root} -- fetch them from the instance (fetch.sh WITHOUT WITH_CKPT=0)")
 
     res = {}
-    starts = {}
+    starts, starts_out = {}, {}
     for name in a.start_names:                                   # start students, so the online gain is on this seed set too
-        v = []
+        v, vo = [], []
         for p in sorted(glob.glob(os.path.join("results2", name, "seed*", "best.pt"))):
             m, cfg = load_student(p)
-            v.append(float(returns(NetPolicy(m.cpu().eval()), seeds, cfg)[0].mean()))
+            rr, oo = returns(NetPolicy(m.cpu().eval()), seeds, cfg)
+            v.append(float(rr.mean())); vo.append(float(oo.mean()))
         if v:
-            starts[name] = v
-            print(f"start {name:10s} {np.round(v, 2)}  mean {np.mean(v):7.2f}  norm {(np.mean(v) - stay.mean()) / den:.3f}")
+            starts[name] = v; starts_out[name] = vo
+            print(f"start {name:10s} {np.round(v, 2)}  mean {np.mean(v):7.2f}  norm {(np.mean(v) - stay.mean()) / den:.3f}"
+                  f"  outage {np.mean(vo):.4f}")
 
-    print(f"\n{'tag':18s} {'arm':9s} {'n':>2s}  per-seed return                mean     norm   95% CI over seeds")
+    print(f"\n{'tag':18s} {'arm':9s} {'n':>2s}  per-seed return                mean     norm   95% CI over seeds   outage")
     for tag in tags:
         tpl, scr = resolve(tag, extra)
         for arm in ("masked", "unmasked"):
-            vals, ss = [], []
+            vals, ss, outs = [], [], []
             for p in sorted(glob.glob(os.path.join(a.root, tag, f"actor_{arm}_seed*.pt"))):
                 s = int(re.search(r"seed(\d+)\.pt$", p).group(1))
                 ck = tpl.format(s=s)
@@ -104,13 +107,15 @@ def main():
                 actor, cfg = build(ck, scr)
                 sd = torch.load(p, map_location="cpu", weights_only=False)
                 actor.load_state_dict(sd.get("state", sd) if isinstance(sd, dict) else sd)
-                vals.append(float(returns(NetPolicy(actor.cpu().eval()), seeds, cfg)[0].mean())); ss.append(s)
+                rr, oo = returns(NetPolicy(actor.cpu().eval()), seeds, cfg)
+                vals.append(float(rr.mean())); outs.append(float(oo.mean())); ss.append(s)
             if not vals:
                 continue
             m, ci = seed_level_ci(vals)
-            res[f"{tag}/{arm}"] = dict(seeds=ss, returns=vals, mean=float(np.mean(vals)))
+            res[f"{tag}/{arm}"] = dict(seeds=ss, returns=vals, outage=outs, mean=float(np.mean(vals)),
+                                       mean_outage=float(np.mean(outs)))
             print(f"{tag:18s} {arm:9s} {len(vals):2d}  {str(np.round(vals, 2)):28s} {np.mean(vals):7.2f}  "
-                  f"{(np.mean(vals) - stay.mean()) / den:6.3f}  [{ci[0]:.2f}, {ci[1]:.2f}]")
+                  f"{(np.mean(vals) - stay.mean()) / den:6.3f}  [{ci[0]:.2f}, {ci[1]:.2f}]  {np.mean(outs):.4f}")
 
     # gains against the matching start student, paired by seed where possible
     print("\ngain over the start student (same seeds, same seed set):")
@@ -124,11 +129,16 @@ def main():
             continue
         g = np.array(d["returns"]) - np.array(base)
         lo, hi = seed_level_ci(list(g))[1]
-        print(f"  {key:28s} {g.mean():+7.2f} returns ({g.mean() / den:+.3f} norm)  per seed {np.round(g, 2)}  95% CI [{lo:.2f}, {hi:.2f}]")
+        extra = ""
+        if name in starts_out and len(starts_out[name]) == len(d.get("outage", [])):
+            go = np.array(d["outage"]) - np.array([starts_out[name][s] for s in d["seeds"]])
+            extra = f"   outage {go.mean():+.4f} ({np.mean(d['outage']) / np.mean(starts_out[name]):.2f}x the start)"
+        print(f"  {key:28s} {g.mean():+7.2f} returns ({g.mean() / den:+.3f} norm)  per seed {np.round(g, 2)}  "
+              f"95% CI [{lo:.2f}, {hi:.2f}]{extra}")
 
     if a.out:
         json.dump(dict(seed0=a.seed0, n=a.n, planner=a.planner, stay=float(stay.mean()), expert=float(exp.mean()),
-                       starts=starts, results=res), open(a.out, "w"), indent=1)
+                       starts=starts, starts_outage=starts_out, results=res), open(a.out, "w"), indent=1)
         print(f"\nwrote {a.out}")
 
 
