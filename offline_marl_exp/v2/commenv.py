@@ -40,6 +40,8 @@ class EnvConfig:
     cluster_std: float = 2.0
     user_speed: float = 0.4    # max cluster drift speed per step
     energy: float = 0.5        # propulsion-energy price per UAV per step: lambda * ||d||^2 (d in unit-ball units)
+    rate_floor: float = 1.0    # coverage floor used ONLY by info["shortfall"] (reward shaping); never by the reward
+                               # or by info["outage"], so every reported number is unchanged at any value
     k: float = float("inf")    # observation radius (actor)
     # opt-in (default False keeps every v2 result reproducible): add the UAV's own previous displacement to the
     # self features and the user position extrapolated EXTRAP_STEPS steps ahead to the user features.
@@ -238,7 +240,10 @@ class CommEnv:
         r = rate.mean(-1) - cfg.energy * en.mean(-1)                       # [B]
         info = dict(local=agent_rewards(self.uav, users, self.ch, cfg) - cfg.energy * en / cfg.n_agents,
                     rate=rate.mean(-1),
-                    outage=(rate < 1.0).float().mean(-1))                  # SINR < 1 (rate<1 bit/s/Hz)
+                    outage=(rate < 1.0).float().mean(-1),                  # SINR < 1 (rate<1 bit/s/Hz); REPORTING
+                    # coverage shortfall below cfg.rate_floor: a graded version of `outage` for reward shaping only.
+                    # `outage` keeps its fixed 1.0 threshold so the reported statistic never moves with the floor.
+                    shortfall=(cfg.rate_floor - rate).clamp(min=0.0).mean(-1))
         return self.obs(cfg.k), r, self.t >= cfg.T, info
 
 

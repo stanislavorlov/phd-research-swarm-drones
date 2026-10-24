@@ -12,6 +12,7 @@ NOTE: written without being executed by its author.
 """
 from __future__ import annotations
 import argparse, os, json
+from dataclasses import replace
 import numpy as np
 import torch
 
@@ -36,6 +37,12 @@ def main():
     ap.add_argument("--init_std", type=float, default=0.2, help="exploration std of the Gaussian around the student mean")
     ap.add_argument("--critic_warmup", type=int, default=15, help="critic-only iterations before the actor is updated")
     ap.add_argument("--target_kl", type=float, default=0.03)
+    ap.add_argument("--outage_coef", type=float, default=0.0,
+                    help="coverage constraint: subtract this x outage fraction from the TRAINING reward only "
+                         "(evaluation and every held-out number stay on the original objective)")
+    ap.add_argument("--shortfall_coef", type=float, default=0.0,
+                    help="coverage constraint: subtract this x mean rate shortfall below --rate_floor, training reward only")
+    ap.add_argument("--rate_floor", type=float, default=1.0, help="floor used by the shortfall penalty")
     ap.add_argument("--n_eval", type=int, default=128)
     ap.add_argument("--tag", default="online")
     ap.add_argument("--out", default="results2/online")
@@ -46,12 +53,14 @@ def main():
     ev = list(range(700_000, 700_000 + a.n_eval))
     fin = list(range(800_000, 800_000 + a.n_final))
     ppo = PPOConfig(iters=a.iters, n_envs=a.n_envs, lr_actor=a.lr_actor, critic_d=a.critic_d,
-                    critic_warmup=a.critic_warmup, target_kl=a.target_kl)
+                    critic_warmup=a.critic_warmup, target_kl=a.target_kl,
+                    outage_coef=a.outage_coef, shortfall_coef=a.shortfall_coef)
     res = {arm: [] for arm in a.arms}
     for s in a.seeds:
         for arm in a.arms:
             f = os.path.join(out, f"run_{arm}_seed{s}.npz")
             actor, cfg = load_student(a.ckpt.format(s=s))
+            cfg = replace(cfg, rate_floor=a.rate_floor)          # affects info["shortfall"] only, never the reward
             if a.scratch:                                            # no offline pre-training: PPO from random weights
                 opts = dict(torch.load(a.ckpt.format(s=s), weights_only=False)["opts"], mdn_k=0, chunk=1)
                 torch.manual_seed(7000 + s)
@@ -65,10 +74,13 @@ def main():
             its = sorted(hist)
             extra = {}
             if a.final:
-                extra["final_returns"] = returns(NetPolicy(actor.cpu().eval()), fin, cfg)[0]
+                fr, fo = returns(NetPolicy(actor.cpu().eval()), fin, cfg)
+                extra["final_returns"], extra["final_outage"] = fr, fo
+            g = lambda k: np.array([d.get(k, np.nan) for d in diag], dtype=float)
             np.savez(f, iters=np.array(its), returns=np.stack([hist[i] for i in its]),
-                     kl=np.array([d["kl"] if d["kl"] is not None else np.nan for d in diag], dtype=float),
-                     train_return=np.array([d["train_return"] for d in diag]), **extra)
+                     kl=g("kl"), train_return=g("train_return"), train_penalty=g("train_penalty"),
+                     eval_outage=g("eval_outage"),
+                     coefs=np.array([a.outage_coef, a.shortfall_coef, a.rate_floor]), **extra)
             torch.save(actor.state_dict(), os.path.join(out, f"actor_{arm}_seed{s}.pt"))
             res[arm].append(float(hist[its[-1]].mean()))
     print("\nfinal-iteration eval return (mean over eval seeds), per training seed:")

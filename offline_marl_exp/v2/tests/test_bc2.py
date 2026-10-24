@@ -233,3 +233,39 @@ def test_bcast6_is_count_plus_sensed():
     assert torch.allclose(s6[..., base:base + C], s1[..., base:base + C], atol=1e-6)      # the count block
     assert torch.allclose(s6[..., base + C:base + 2 * C], s3[..., base:base + C], atol=1e-6)  # the sensed block
     assert s6.shape[-1] == dims(cfg6)[0]
+
+
+def test_shortfall_is_graded_and_outage_threshold_is_fixed():
+    """info['shortfall'] must respond to cfg.rate_floor; info['outage'] must NOT (it is the reported statistic)."""
+    import torch as _t
+    base = replace(SMALL, rate_floor=1.0)
+    hi = replace(SMALL, rate_floor=4.0)
+    o_b, o_h = [], []
+    for c in (base, hi):
+        env = CommEnv(c, SEEDS); env.reset()
+        _, _, _, info = env.step(_t.zeros(len(SEEDS), c.n_agents, 2), env.ch)
+        o_b.append(info)
+    i1, i2 = o_b
+    assert _t.allclose(i1["outage"], i2["outage"]), "outage must not move with rate_floor"
+    assert (i2["shortfall"] >= i1["shortfall"]).all() and i2["shortfall"].sum() > i1["shortfall"].sum()
+    assert (i1["shortfall"] >= 0).all()
+
+
+def test_coverage_penalty_only_changes_the_training_reward():
+    """PPOConfig.outage_coef must lower the penalised reward used by PPO while ep_return stays the true objective."""
+    import torch as _t
+    from mappo import PPOConfig, collect
+    from models import Critic
+    cfg = replace(SMALL, rate_floor=2.0)
+    seeds = [41, 42]
+    mk = lambda: (_t.manual_seed(0), make_student(dict(k=cfg.k, d=32, mdn_k=0, chunk=1, obs_extra=False,
+                                                       k_a=cfg.k_a, bcast=cfg.bcast)))[1]
+    out = {}
+    for coef in (0.0, 5.0):
+        _t.manual_seed(0); actor = mk()
+        _t.manual_seed(1); critic = Critic(cfg, d=16)
+        _t.manual_seed(2)
+        b = collect(cfg, seeds, actor, critic, True, PPOConfig(outage_coef=coef, shortfall_coef=coef))
+        out[coef] = b
+    assert abs(out[0.0]["ep_return"] - out[5.0]["ep_return"]) < 1e-5, "ep_return must be the UNPENALISED objective"
+    assert out[0.0]["ep_penalty"] == 0.0 and out[5.0]["ep_penalty"] > 0.0

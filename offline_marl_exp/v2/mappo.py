@@ -46,6 +46,11 @@ class PPOConfig:
     reward_scale: float = 0.05
     eval_every: int = 15
     critic_d: int = 32
+    # --- coverage constraint (section 5): subtract a penalty from the TRAINING reward only. Evaluation, the logged
+    # ep_return and every held-out number stay on the original objective, so constrained and unconstrained runs are
+    # directly comparable. Both default to 0.0, which reproduces every earlier run exactly.
+    outage_coef: float = 0.0        # penalty per unit of outage fraction (users below 1 bit/s/Hz)
+    shortfall_coef: float = 0.0     # penalty per unit of mean rate shortfall below EnvConfig.rate_floor
 
 
 def cat_obs(lst):
@@ -58,6 +63,7 @@ def collect(cfg: EnvConfig, seeds, actor: Actor, critic: Critic, masked: bool, p
     obs = env.reset()
     B, N, T = env.B, cfg.n_agents, cfg.T
     O, A, Cc, LP, V, R, EN = [], [], [], [], [], [], []
+    R_true, PEN = [], []
     for t in range(T):
         o = obs.flat()
         dn, dc = actor.dist(o)
@@ -65,8 +71,10 @@ def collect(cfg: EnvConfig, seeds, actor: Actor, critic: Critic, masked: bool, p
         lp = dn.log_prob(a).sum(-1) + dc.log_prob(c)
         v = critic(o, masked)
         obs, r, done, info = env.step(a.view(B, N, 2), c.view(B, N))
+        pen = ppo.outage_coef * info["outage"] + ppo.shortfall_coef * info["shortfall"]      # [B], 0 by default
         O.append(o); A.append(a); Cc.append(c); LP.append(lp); V.append(v)
-        R.append(r.unsqueeze(1).expand(B, N).reshape(-1) * ppo.reward_scale)
+        R.append((r - pen).unsqueeze(1).expand(B, N).reshape(-1) * ppo.reward_scale)
+        R_true.append(r); PEN.append(pen)
     V.append(torch.zeros_like(V[0]))                                   # finite horizon, t/T in obs -> V(T)=0
     adv = torch.zeros(T, B * N)
     last = torch.zeros(B * N)
@@ -77,7 +85,8 @@ def collect(cfg: EnvConfig, seeds, actor: Actor, critic: Critic, masked: bool, p
     ret = adv + torch.stack(V[:-1])
     batch = dict(o=cat_obs(O), a=torch.cat(A), c=torch.cat(Cc), lp=torch.cat(LP),
                  adv=adv.reshape(-1), ret=ret.reshape(-1))
-    batch["ep_return"] = float(torch.stack([r[::N] for r in R]).sum(0).mean() / ppo.reward_scale)
+    batch["ep_return"] = float(torch.stack(R_true).sum(0).mean())          # the TRUE objective, never the penalised one
+    batch["ep_penalty"] = float(torch.stack(PEN).sum(0).mean())
     return batch
 
 
@@ -132,20 +141,22 @@ def train_mappo(cfg: EnvConfig, actor: Actor, masked_critic: bool, run_seed: int
     a_opt = torch.optim.Adam(actor.parameters(), lr=ppo.lr_actor)
     c_opt = torch.optim.Adam(critic.parameters(), lr=ppo.lr_critic)
     hist = {}
-    ev = lambda: returns(NetPolicy(actor), eval_seeds, cfg)[0]
-    hist[0] = ev()
+    ev = lambda: returns(NetPolicy(actor), eval_seeds, cfg)                 # (return, outage) on the ORIGINAL objective
+    hist[0], out0 = ev()
     t0 = time.time()
     diag = []
     for it in range(1, ppo.iters + 1):
         seeds = [train_seed_base + run_seed * 100_000 + it * ppo.n_envs + j for j in range(ppo.n_envs)]
         batch = collect(cfg, seeds, actor, critic, masked_critic, ppo)
         st = ppo_update(actor, critic, masked_critic, batch, a_opt, c_opt, ppo, update_actor=(it > ppo.critic_warmup))
-        st["train_return"] = batch["ep_return"]; st["it"] = it
+        st["train_return"] = batch["ep_return"]; st["train_penalty"] = batch["ep_penalty"]; st["it"] = it
         diag.append(st)
         if it % ppo.eval_every == 0 or it == ppo.iters:
-            hist[it] = ev()
+            hist[it], o_ev = ev()
+            st["eval_outage"] = float(o_ev.mean())
             if verbose:
-                msg = (f"[{label}] it {it:4d} eval {hist[it].mean():7.2f}  train {batch['ep_return']:7.2f}  "
+                msg = (f"[{label}] it {it:4d} eval {hist[it].mean():7.2f} out {st['eval_outage']:.4f}  "
+                       f"train {batch['ep_return']:7.2f}  "
                        f"kl {st['kl'] if st['kl'] is not None else float('nan'):.4f}  clipfrac {st['clipfrac'] if st['clipfrac'] is not None else float('nan'):.3f}  "
                        f"logstd {actor.log_std.mean().item():+.2f}  ({time.time()-t0:.0f}s)")
                 print(msg, flush=True)
