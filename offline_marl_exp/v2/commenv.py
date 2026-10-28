@@ -198,8 +198,15 @@ class CommEnv:
         af = torch.cat([rel_a / sc, oh.unsqueeze(1).expand(-1, N, -1, -1)], -1)
         sf = torch.cat([self.uav / cfg.world, oh, torch.full((B, N, 1), t / cfg.T)], -1)
         # column order of sf: [pos(2), channel one-hot(C), t/T, bcast...(C | 4), prev displacement(2) if obs_extra]
-        if cfg.bcast in (1, 2, 6):
-            sf = torch.cat([sf, (oh.sum(1, keepdim=True) - oh) / N], -1)             # other UAVs per channel, all of them
+        if cfg.bcast in (1, 2, 6, 7):
+            if cfg.bcast == 7:
+                # Control for bcast=1: the SAME per-channel count, but only over UAVs inside the peer
+                # radius k_a. Separates "counting is the right statistic" from "the count is global",
+                # exactly as bcast=4 does for the sensed power.
+                cnt = torch.einsum("bij,bjc->bic", am.to(oh.dtype), oh) / N
+            else:
+                cnt = (oh.sum(1, keepdim=True) - oh) / N  # all of them, visible or not
+            sf = torch.cat([sf, cnt], -1)
         if cfg.bcast in (3, 4, 5, 6):
             # Receiver-side interference feedback: co-channel power at UAV i's own position, per channel. Physically a
             # power measurement (no communication), but informationally global -- distant co-channel UAVs still contribute.
