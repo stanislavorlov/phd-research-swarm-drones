@@ -31,8 +31,11 @@ CONFIGS = {
     "restarts": dict(restarts=16, rounds=4,  adam_iters=80),    # --grid: which knob matters
     "rounds":   dict(restarts=4,  rounds=8,  adam_iters=80),
     "iters":    dict(restarts=4,  rounds=4,  adam_iters=240),
+    "weak1":    dict(restarts=1,  rounds=1,  adam_iters=10),    # 1/32x
+    "weak2":    dict(restarts=1,  rounds=2,  adam_iters=20),    # 1/16x
+    "weak3":    dict(restarts=2,  rounds=2,  adam_iters=40),    # 1/4x
 }
-LADDER = ["strong", "strong+", "strong++", "strong3"]
+LADDER = ["weak1", "weak2", "weak3", "strong", "strong+"]
 
 
 def main():

@@ -1,0 +1,18 @@
+== Q_weak2 seed 4  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6}  device=cpu  args={'k': 6.0, 'd': 128, 'head': 'mdn', 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6, 'no_aug': False, 'epochs0': 300, 'bs': 2048, 'lr': 0.002, 'wd': 0.0001, 'w_chunk': 0.5, 'device': 'cpu', 'seed': 4, 'train_data': 'data/expert_train_weak2.pt', 'val_data': 'data/expert_val_weak2.pt', 'plan_restarts': 4, 'plan_rounds': 4, 'plan_iters': 80, 'plan_energy': None, 'name': 'Q_weak2', 'out': 'results2', 'rounds': 0, 'scen': 256, 'epochs_round': 30, 'beta0': 0.5, 'noise': 0.05, 'n_monitor': 128, 'n_final': 256, 'final': False, 'smoke': False, 'force': False}
+round-0 rows: train 96000  val 16000  (0s)
+monitor refs: stay-put 49.83  expert 117.04  (31s)
+-- round 0: BC 300 epochs
+    ep    1/300  loss   2.6228 | EMA train mse0 0.1789 acc 0.338 | val mse0 0.1801 acc 0.340 | 11s
+    ep   30/300  loss   0.1706 | EMA train mse0 0.1385 acc 0.901 | val mse0 0.1396 acc 0.896 | 268s
+    ep   60/300  loss  -0.1151 | EMA train mse0 0.1361 acc 0.901 | val mse0 0.1365 acc 0.895 | 534s
+    ep   90/300  loss  -0.0934 | EMA train mse0 0.1366 acc 0.901 | val mse0 0.1359 acc 0.896 | 798s
+    ep  120/300  loss  -0.0786 | EMA train mse0 0.1356 acc 0.901 | val mse0 0.1379 acc 0.896 | 1062s
+    ep  150/300  loss  -0.0891 | EMA train mse0 0.1345 acc 0.902 | val mse0 0.1393 acc 0.896 | 1323s
+    ep  180/300  loss  -0.1868 | EMA train mse0 0.1339 acc 0.902 | val mse0 0.1387 acc 0.895 | 1585s
+    ep  210/300  loss  -0.1968 | EMA train mse0 0.1340 acc 0.902 | val mse0 0.1397 acc 0.895 | 1848s
+    ep  240/300  loss  -0.2747 | EMA train mse0 0.1345 acc 0.902 | val mse0 0.1398 acc 0.895 | 2110s
+    ep  270/300  loss  -0.2146 | EMA train mse0 0.1341 acc 0.903 | val mse0 0.1405 acc 0.896 | 2372s
+    ep  300/300  loss  -0.2340 | EMA train mse0 0.1339 acc 0.902 | val mse0 0.1409 acc 0.896 | 2633s
+[round 0] closed-loop 80.81  expert-normalised 0.441  val mse0 0.1409 acc 0.896
+best round by monitor: 0  norm 0.441
+wrote results2/Q_weak2/seed4/summary.json

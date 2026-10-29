@@ -1,0 +1,45 @@
+{
+ "seed0": 800000,
+ "n": 64,
+ "stay": 52.527183532714844,
+ "verdict": "reference MOVES: regenerate every normalised number with the stronger planner",
+ "configs": {
+  "weak1": {
+   "wall_s": 1.158803939819336,
+   "restarts": 1,
+   "rounds": 1,
+   "adam_iters": 10
+  },
+  "weak2": {
+   "wall_s": 0.5750467777252197,
+   "restarts": 1,
+   "rounds": 2,
+   "adam_iters": 20
+  },
+  "weak3": {
+   "wall_s": 1.0596699714660645,
+   "restarts": 2,
+   "rounds": 2,
+   "adam_iters": 40
+  },
+  "strong": {
+   "wall_s": 3.9744598865509033,
+   "restarts": 4,
+   "rounds": 4,
+   "adam_iters": 80
+  },
+  "strong+": {
+   "wall_s": 18.41099214553833,
+   "restarts": 16,
+   "rounds": 8,
+   "adam_iters": 80
+  }
+ },
+ "means": {
+  "weak1": 98.37596201896667,
+  "weak2": 105.7827832698822,
+  "weak3": 109.82131862640381,
+  "strong": 120.77178227901459,
+  "strong+": 123.06304919719696
+ }
+}

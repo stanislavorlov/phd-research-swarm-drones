@@ -201,13 +201,15 @@ if __name__ == "__main__":
     ap.add_argument("--restarts", type=int, default=4)
     ap.add_argument("--rounds", type=int, default=4)
     ap.add_argument("--chunk", type=int, default=100)
+    ap.add_argument("--adam_iters", type=int, default=80)
     a = ap.parse_args()
     cfg = EnvConfig()
     os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True)
     seeds = list(range(a.start, a.start + a.n))
     parts = []
     for i in range(0, a.n, a.chunk):
-        o = plan(seeds[i:i + a.chunk], cfg, restarts=a.restarts, rounds=a.rounds)
+        o = plan(seeds[i:i + a.chunk], cfg, restarts=a.restarts, rounds=a.rounds,
+                 adam_iters=a.adam_iters)
         parts.append(o); print(f"chunk {i//a.chunk}: {o['solve_s']:.1f}s mean J={o['J'].mean():.2f}", flush=True)
     cat = lambda k: np.concatenate([p[k] for p in parts], 0)
     actions, channels = cat("actions"), cat("channels")
