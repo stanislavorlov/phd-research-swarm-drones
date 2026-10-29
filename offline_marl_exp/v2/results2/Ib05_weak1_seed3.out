@@ -1,0 +1,47 @@
+== Ib05_weak1 seed 3  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6}  device=cuda  iql(tau=0.8, beta=0.5, gamma=0.99, critic_epochs=60)
+rows: 96000  (demonstrator return 96.51)
+/root/v2/iql.py:174: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  log(f"    critic ep {ep+1:3d}/{a.critic_epochs}  L_V {float(lv):8.4f}  L_Q {float(lq):8.4f}  {time.time()-t0:.0f}s")
+    critic ep   1/60  L_V   0.0000  L_Q   1.6834  4s
+    critic ep  10/60  L_V   0.0011  L_Q   1.3833  29s
+    critic ep  20/60  L_V   0.2416  L_Q   3.6406  56s
+    critic ep  30/60  L_V   0.1368  L_Q   1.1944  84s
+    critic ep  40/60  L_V   0.1610  L_Q   1.0689  112s
+    critic ep  50/60  L_V   0.2165  L_Q   1.4448  140s
+    critic ep  60/60  L_V   0.0991  L_Q   1.0950  167s
+    advantages: mean -0.332  sd 0.505  p1 -1.571  p99 +0.968
+    AWR weights: mean 1.000  p50 0.959  p99 1.855  max 5.151  n_eff 89680/96000 (93.4%)
+    actor  ep    1/300  loss   2.6123  mse0 0.1685 acc 0.417  1s
+    actor  ep   10/300  loss   0.4280  mse0 0.1448 acc 0.889  11s
+    actor  ep   20/300  loss   0.1896  mse0 0.1237 acc 0.888  23s
+    actor  ep   30/300  loss   0.1219  mse0 0.1221 acc 0.897  34s
+    actor  ep   40/300  loss   0.0815  mse0 0.1213 acc 0.891  45s
+    actor  ep   50/300  loss   0.0913  mse0 0.1218 acc 0.884  57s
+    actor  ep   60/300  loss  -0.1294  mse0 0.1188 acc 0.896  69s
+    actor  ep   70/300  loss  -0.0086  mse0 0.1184 acc 0.879  80s
+    actor  ep   80/300  loss  -0.0511  mse0 0.1141 acc 0.883  92s
+    actor  ep   90/300  loss  -0.0613  mse0 0.1203 acc 0.899  103s
+    actor  ep  100/300  loss  -0.1013  mse0 0.1189 acc 0.893  115s
+    actor  ep  110/300  loss  -0.0844  mse0 0.1175 acc 0.888  126s
+    actor  ep  120/300  loss  -0.1517  mse0 0.1056 acc 0.888  138s
+    actor  ep  130/300  loss  -0.1078  mse0 0.1211 acc 0.881  149s
+    actor  ep  140/300  loss  -0.1001  mse0 0.1142 acc 0.883  160s
+    actor  ep  150/300  loss  -0.1796  mse0 0.1191 acc 0.889  172s
+    actor  ep  160/300  loss  -0.1397  mse0 0.1190 acc 0.877  184s
+    actor  ep  170/300  loss  -0.2843  mse0 0.1047 acc 0.884  195s
+    actor  ep  180/300  loss  -0.2992  mse0 0.1128 acc 0.901  207s
+    actor  ep  190/300  loss  -0.1856  mse0 0.1187 acc 0.885  218s
+    actor  ep  200/300  loss  -0.2002  mse0 0.1055 acc 0.878  229s
+    actor  ep  210/300  loss  -0.2827  mse0 0.1113 acc 0.890  241s
+    actor  ep  220/300  loss  -0.2529  mse0 0.1078 acc 0.890  253s
+    actor  ep  230/300  loss  -0.2815  mse0 0.1073 acc 0.892  264s
+    actor  ep  240/300  loss  -0.2924  mse0 0.1111 acc 0.896  276s
+    actor  ep  250/300  loss  -0.3245  mse0 0.1139 acc 0.905  287s
+    actor  ep  260/300  loss  -0.2684  mse0 0.1182 acc 0.898  298s
+    actor  ep  270/300  loss  -0.2725  mse0 0.1123 acc 0.884  309s
+    actor  ep  280/300  loss  -0.2781  mse0 0.1218 acc 0.883  320s
+    actor  ep  290/300  loss  -0.3004  mse0 0.1141 acc 0.897  332s
+    actor  ep  300/300  loss  -0.2723  mse0 0.1144 acc 0.891  343s
+[iql] closed-loop 73.95 on 128 monitor scenarios
+saved results2/Ib05_weak1/seed3/best.pt

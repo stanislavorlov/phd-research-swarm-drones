@@ -1,0 +1,20 @@
+{
+ "name": "Ib0_weak1",
+ "seed": 3,
+ "opts": {
+  "k": 6.0,
+  "d": 128,
+  "mdn_k": 5,
+  "chunk": 4,
+  "obs_extra": false,
+  "k_a": -1.0,
+  "bcast": 6
+ },
+ "monitor_return_best": 73.33177185058594,
+ "iql": {
+  "tau": 0.8,
+  "beta": 0.0,
+  "gamma": 0.99,
+  "critic_epochs": 60
+ }
+}
