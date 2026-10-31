@@ -1,0 +1,46 @@
+rows: 96000 (paired; 300 scenarios x 2 branches)
+    solver advantages: mean +0.000  sd 1.057
+    AWR weights: p50 0.845  p99 4.581  n_eff 41302/96000 (43.0%)
+    critic ep   1/60  L_V   0.0000  L_Q   4.5334  4s
+    critic ep  10/60  L_V   0.0023  L_Q   1.5883  31s
+    critic ep  20/60  L_V   0.2175  L_Q   6.7934  62s
+    critic ep  30/60  L_V   0.2023  L_Q   3.7614  92s
+    critic ep  40/60  L_V   0.2281  L_Q   1.5908  123s
+    critic ep  50/60  L_V   0.2194  L_Q   1.9956  154s
+    critic ep  60/60  L_V   0.2114  L_Q   3.2028  179s
+    adv by branch: committed -0.857  counterfactual -0.857  gap -0.000
+    advantages: mean -0.857  sd 0.723  p1 -2.683  p99 +0.890
+    AWR weights: mean 1.000  p50 0.944  p99 2.241  max 11.819  n_eff 82705/96000 (86.2%)
+    actor  ep    1/300  loss   2.6592  mse0 0.2104 acc 0.814  1s
+    actor  ep   10/300  loss   0.9136  mse0 0.2371 acc 0.915  12s
+    actor  ep   20/300  loss   0.7017  mse0 0.2458 acc 0.911  23s
+    actor  ep   30/300  loss   0.5103  mse0 0.2239 acc 0.915  35s
+    actor  ep   40/300  loss   0.4123  mse0 0.2417 acc 0.926  47s
+    actor  ep   50/300  loss   0.3492  mse0 0.2454 acc 0.923  58s
+    actor  ep   60/300  loss   0.2885  mse0 0.2321 acc 0.916  70s
+    actor  ep   70/300  loss   0.2826  mse0 0.2392 acc 0.925  82s
+    actor  ep   80/300  loss   0.2813  mse0 0.2386 acc 0.921  93s
+    actor  ep   90/300  loss   0.2872  mse0 0.2294 acc 0.917  105s
+    actor  ep  100/300  loss   0.2105  mse0 0.2318 acc 0.913  116s
+    actor  ep  110/300  loss   0.1813  mse0 0.2249 acc 0.912  128s
+    actor  ep  120/300  loss   0.2086  mse0 0.2395 acc 0.919  140s
+    actor  ep  130/300  loss   0.2364  mse0 0.2343 acc 0.925  151s
+    actor  ep  140/300  loss   0.0915  mse0 0.2292 acc 0.919  163s
+    actor  ep  150/300  loss   0.2218  mse0 0.2478 acc 0.915  175s
+    actor  ep  160/300  loss   0.1663  mse0 0.2203 acc 0.921  187s
+    actor  ep  170/300  loss   0.2343  mse0 0.2460 acc 0.909  198s
+    actor  ep  180/300  loss   0.1039  mse0 0.2326 acc 0.921  210s
+    actor  ep  190/300  loss   0.0714  mse0 0.2192 acc 0.924  221s
+    actor  ep  200/300  loss   0.1440  mse0 0.2270 acc 0.922  233s
+    actor  ep  210/300  loss   0.1849  mse0 0.2342 acc 0.921  245s
+    actor  ep  220/300  loss   0.0339  mse0 0.2356 acc 0.929  256s
+    actor  ep  230/300  loss   0.0785  mse0 0.2255 acc 0.919  268s
+    actor  ep  240/300  loss   0.0771  mse0 0.2370 acc 0.924  279s
+    actor  ep  250/300  loss   0.0565  mse0 0.2310 acc 0.921  291s
+    actor  ep  260/300  loss   0.1136  mse0 0.2441 acc 0.932  303s
+    actor  ep  270/300  loss   0.0675  mse0 0.2200 acc 0.919  314s
+    actor  ep  280/300  loss   0.0513  mse0 0.2226 acc 0.933  326s
+    actor  ep  290/300  loss   0.0419  mse0 0.2306 acc 0.916  337s
+    actor  ep  300/300  loss   0.0829  mse0 0.2329 acc 0.916  346s
+[iql] closed-loop 75.85 on 128 monitor scenarios
+saved results2/P05_pairs/seed1/best.pt
