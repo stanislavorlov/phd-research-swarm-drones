@@ -92,8 +92,8 @@ class VNet(nn.Module):
         self.enc = SetEncoder(*dims(cfg), d=d)
         self.head = nn.Linear(d, 1)
 
-    def forward(self, o: Obs):
-        return self.head(self.enc(o)).squeeze(-1)
+    def forward(self, o: Obs, um=None, am=None):
+        return self.head(self.enc(o, um, am)).squeeze(-1)
 
 
 class QNet(nn.Module):
@@ -103,13 +103,22 @@ class QNet(nn.Module):
         self.enc = SetEncoder(*dims(cfg), d=d)
         self.head = nn.Sequential(nn.Linear(d + 2 + cfg.n_channels, d), nn.ReLU(), nn.Linear(d, 1))
 
-    def forward(self, o: Obs, a, c):
-        h = self.enc(o)
+    def forward(self, o: Obs, a, c, um=None, am=None):
+        h = self.enc(o, um, am)
         return self.head(torch.cat([h, a, F.one_hot(c, self.C).float()], -1)).squeeze(-1)
 
 
 def expectile_loss(u, tau):
     return (torch.abs(tau - (u < 0).float()) * u ** 2).mean()
+
+def fm(o: Obs, idx, N):
+    """Full-state masks: every user and every other UAV visible to the critic.
+    commenv.full_masks infers the agent index from row position, which is wrong once the batch is
+    shuffled. Rows are scenario-major within each time block, so agent = global index % N."""
+    um = torch.ones_like(o.um)
+    am = torch.ones_like(o.am)
+    am[torch.arange(am.shape[0], device=am.device), idx % N] = False
+    return um, am
 
 
 # ----------------------------------------------------------------------------- actor loss, per sample
@@ -157,14 +166,17 @@ def train_iql(model, ema, rows: RLRows, cfg, dev, a, log=print):
             idx = perm[i:i + a.bs]
             r = rows.index(idx)
             nobs = rows.next_obs(idx)
+            um, am = fm(r.obs, idx, cfg.n_agents) if a.critic_full else (None, None)
             with torch.no_grad():
-                q_t = Qt(r.obs, r.a[:, 0], r.c)
-            lv = expectile_loss(q_t - V(r.obs), a.tau)
-            optV.zero_grad(set_to_none=True); lv.backward()
-            nn.utils.clip_grad_norm_(V.parameters(), 1.0); optV.step()
+                q_t = Qt(r.obs, r.a[:, 0], r.c, um, am)
+            lv = expectile_loss(q_t - V(r.obs, um, am), a.tau)
+            optV.zero_grad(set_to_none=True);
+            lv.backward()
+            nn.utils.clip_grad_norm_(V.parameters(), 1.0);
+            optV.step()
             with torch.no_grad():
-                target = r.r + a.gamma * (1.0 - r.d) * V(nobs)
-            lq = F.mse_loss(Q(r.obs, r.a[:, 0], r.c), target)
+                target = r.r + a.gamma * (1.0 - r.d) * V(nobs, um, am)
+            lq = F.mse_loss(Q(r.obs, r.a[:, 0], r.c, um, am), target)
             optQ.zero_grad(set_to_none=True); lq.backward()
             nn.utils.clip_grad_norm_(Q.parameters(), 1.0); optQ.step()
             with torch.no_grad():
@@ -179,8 +191,15 @@ def train_iql(model, ema, rows: RLRows, cfg, dev, a, log=print):
         for i in range(0, n, 8192):
             idx = idx_all[i:i + 8192]
             r = rows.index(idx)
-            A_.append(Qt(r.obs, r.a[:, 0], r.c) - V(r.obs))
+            um, am = fm(r.obs, idx, cfg.n_agents) if a.critic_full else (None, None)
+            A_.append(Qt(r.obs, r.a[:, 0], r.c, um, am) - V(r.obs, um, am))
         adv = torch.cat(A_)
+        if a.src_split > 0:
+            scen = (idx_all % rows.blk) // cfg.n_agents
+            first = scen < a.src_split
+            log(f"    adv by source: first-{a.src_split} {float(adv[first].mean()):+.3f}  "
+                f"rest {float(adv[~first].mean()):+.3f}  "
+                f"gap {float(adv[~first].mean() - adv[first].mean()):+.3f}")
         log(f"    advantages: mean {float(adv.mean()):+.3f}  sd {float(adv.std()):.3f}  "
             f"p1 {float(adv.quantile(0.01)):+.3f}  p99 {float(adv.quantile(0.99)):+.3f}")
         if a.adv_norm:
@@ -233,6 +252,8 @@ def main():
     ap.add_argument("--n_monitor", type=int, default=128)
     ap.add_argument("--smoke", action="store_true")
     ap.add_argument("--adv_norm", action="store_true")
+    ap.add_argument("--src_split", type=int, default=0)
+    ap.add_argument("--critic_full", action="store_true")
     a = ap.parse_args()
     if a.smoke:
         a.epochs0, a.critic_epochs, a.n_monitor = 2, 2, 8
