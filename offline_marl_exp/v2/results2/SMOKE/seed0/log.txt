@@ -1,0 +1,13 @@
+== SMOKE seed 0  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6}  device=cuda  weights=solver/awr beta=3.0
+rows: 19200  (paired; 60 scenarios x 2 branches)
+    solver advantages: mean +0.000  sd 1.057  p1 -3.382  p99 +3.382
+== SMOKE seed 0  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6}  device=cuda  weights=learned/awr beta=3.0 tau=0.8 critic_epochs=2 critic_full=False
+rows: 19200  (paired; 60 scenarios x 2 branches)
+    critic ep   1/2  L_V   0.0004  L_Q  32.3679  1s
+    adv by branch: committed -0.017  counterfactual -0.016  gap -0.001
+    learned advantages: mean -0.016  sd 0.023  p1 -0.076  p99 +0.041
+    weights[learned]: mean 1.000  p50 1.001  p99 1.185  max 1.396  n_eff 19106/19200 (99.5%)
+    actor  ep    1/2  loss   2.5337  mse0 0.2013 acc 0.652  0s
+    actor  ep    2/2  loss   2.1326  mse0 0.2051 acc 0.691  0s
+[iql] closed-loop 39.13 on 8 monitor scenarios
+saved results2/SMOKE/seed0/best.pt

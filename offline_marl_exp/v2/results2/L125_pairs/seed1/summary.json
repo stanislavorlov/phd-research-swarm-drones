@@ -1,0 +1,22 @@
+{
+ "name": "L125_pairs",
+ "seed": 1,
+ "opts": {
+  "k": 6.0,
+  "d": 128,
+  "mdn_k": 5,
+  "chunk": 4,
+  "obs_extra": false,
+  "k_a": -1.0,
+  "bcast": 6
+ },
+ "monitor_return_best": 71.39308166503906,
+ "weights": {
+  "source": "learned",
+  "mode": "awr",
+  "beta": 1.25,
+  "tau": 0.8,
+  "critic_epochs": 60,
+  "critic_full": false
+ }
+}

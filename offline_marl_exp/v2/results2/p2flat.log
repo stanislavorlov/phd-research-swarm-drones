@@ -1,0 +1,12 @@
+nohup: ignoring input
++ mkdir -p results2
++ for s in 1 2
++ python3 iql.py --name P0_pairs --beta 0 --pairs_data data/pairs_train.pt --solver_adv data/adv_train.pt --k 6 --k_a -1 --bcast 6 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --seed 1
++ python3 iql.py --name P05_pairs --beta 0.5 --pairs_data data/pairs_train.pt --solver_adv data/adv_train.pt --k 6 --k_a -1 --bcast 6 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --seed 1
++ python3 iql.py --name P_hard --weight_mode hard --beta 0 --pairs_data data/pairs_train.pt --solver_adv data/adv_train.pt --k 6 --k_a -1 --bcast 6 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --seed 1
++ python3 iql.py --name P_rand --weight_mode rand --beta 0 --pairs_data data/pairs_train.pt --solver_adv data/adv_train.pt --k 6 --k_a -1 --bcast 6 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --seed 1
++ for s in 1 2
++ python3 iql.py --name P0_pairs --beta 0 --pairs_data data/pairs_train.pt --solver_adv data/adv_train.pt --k 6 --k_a -1 --bcast 6 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --seed 2
++ python3 iql.py --name P05_pairs --beta 0.5 --pairs_data data/pairs_train.pt --solver_adv data/adv_train.pt --k 6 --k_a -1 --bcast 6 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --seed 2
++ python3 iql.py --name P_hard --weight_mode hard --beta 0 --pairs_data data/pairs_train.pt --solver_adv data/adv_train.pt --k 6 --k_a -1 --bcast 6 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --seed 2
++ python3 iql.py --name P_rand --weight_mode rand --beta 0 --pairs_data data/pairs_train.pt --solver_adv data/adv_train.pt --k 6 --k_a -1 --bcast 6 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --seed 2

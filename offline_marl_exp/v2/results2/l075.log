@@ -1,0 +1,7 @@
+nohup: ignoring input
++ for s in 0 1 2
++ python3 iql.py --name L075_pairs --beta 0.75 --pairs_data data/pairs_train.pt --k 6 --k_a -1 --bcast 6 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --critic_epochs 60 --seed 0
++ for s in 0 1 2
++ python3 iql.py --name L075_pairs --beta 0.75 --pairs_data data/pairs_train.pt --k 6 --k_a -1 --bcast 6 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --critic_epochs 60 --seed 1
++ for s in 0 1 2
++ python3 iql.py --name L075_pairs --beta 0.75 --pairs_data data/pairs_train.pt --k 6 --k_a -1 --bcast 6 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --critic_epochs 60 --seed 2

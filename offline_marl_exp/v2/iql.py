@@ -1,26 +1,32 @@
 """
-iql.py -- Implicit Q-Learning on the planner dataset (paper 2, offline arm).
+iql.py -- offline policy extraction on planner data, with either a learned critic or exact solver advantages.
 
+    # learned critic (standard IQL)
     python3 iql.py --name I_weak1 --seed 0 --train_data data/expert_train_weak1.pt \
         --val_data data/expert_val_weak1.pt --k 6 --k_a -1 --bcast 6 --head mdn --d 128 \
         --mdn_k 5 --chunk 4 --epochs0 300
-    python3 iql.py --smoke                      # seconds, end to end, results meaningless
 
-Same contract as student.py: writes results2/<name>/seed<s>/best.pt via bc2.save_student, so final_eval.py
-and online_test_eval.py pick it up with no changes.
+    # exact advantages from the planner (no critic is trained at all)
+    python3 iql.py --name P05_pairs --seed 0 --pairs_data data/pairs_train.pt \
+        --solver_adv data/adv_train.pt --beta 0.5 --k 6 --k_a -1 --bcast 6 --head mdn \
+        --d 128 --mdn_k 5 --chunk 4 --epochs0 300
 
-Why IQL rather than MA-CQL: no per-agent conservatism coefficient to tune, and its policy-extraction step IS
-weighted behaviour cloning, so it reuses the loss this project already trusts.
+    python3 iql.py --smoke --name SMOKE --train_data data/expert_train_weak1.pt --val_data data/expert_val_weak1.pt
 
-  V:  expectile regression towards Q_target(o,a)          L_V = |tau - 1[u<0]| u^2,  u = Q_target - V
-  Q:  TD regression towards r + gamma (1-d) V(o')
-  pi: advantage-weighted BC, weights w = min(exp(beta (Q_target - V)), w_max)
+Writes results2/<name>/seed<s>/best.pt via bc2.save_student, so final_eval.py and online_test_eval.py pick it
+up unchanged.
 
-tau -> 1 makes V an optimistic (max-like) estimate without ever querying the policy off-distribution, which is
-the whole point: no action is evaluated that the planner did not take.
+Policy extraction is advantage-weighted behaviour cloning, so it reuses this project's own loss per-sample
+(`awr_loss` mirrors models.StudentActor.bc_loss). models.py is untouched.
 
-Decentralised by construction: V and Q consume the agent's own k-masked observation, the same Obs the actor
-sees, through their own SetEncoder. The team reward is shared across agents (cooperative, common reward).
+Weights come from exactly ONE of two sources, and the choice is structural rather than a matter of control
+flow -- `--solver_adv` means no critic is constructed or trained:
+
+  learned   V by expectile regression towards Q_target, Q by TD towards r + gamma (1-d) V(o');
+            w = min(exp(beta A), w_max) with A = Q_target - V.
+  solver    A read from solver_advantages.py, where Q_true(s,a) = r(s,a) + J(s') is computed BY THE PLANNER
+            and carries no estimation error. --weight_mode picks awr (soft), hard (keep the better branch) or
+            rand (keep one branch at random -- the control for hard, same n_eff, selection removed).
 
 NOTE: written without being executed by its author. Run --smoke first.
 """
@@ -32,16 +38,17 @@ import torch.nn.functional as F
 
 from commenv import EnvConfig, CommEnv
 from models import SetEncoder, dims, Obs
-from bc2 import Rows, add_student_args, student_opts, cfg_from_opts, make_student, save_student, augment2, closed_loop
+from bc2 import (Rows, add_student_args, student_opts, cfg_from_opts, make_student, save_student,
+                 augment2, closed_loop)
 
 
-# ----------------------------------------------------------------------------- data with rewards
+# ----------------------------------------------------------------------------- data
 class RLRows:
     """Rows plus reward, next observation and terminal flag.
 
-    `blk` set  -> next_obs() shifts one time-block (rl_rows, single trajectory).
-    `nobs` set -> next_obs() indexes it directly (pair_rows, branches leave the trajectory).
-    `src` tags the branch: 0 = committed/strong, 1 = counterfactual/weak."""
+    blk set  -> next_obs() shifts one time-block (rl_rows: one trajectory, next state is in the stream).
+    nobs set -> next_obs() indexes it directly (pair_rows: branches leave the trajectory).
+    src tags the branch: 0 = committed, 1 = counterfactual."""
 
     def __init__(self, obs, a, m, c, r, d, blk=None, nobs=None, src=None):
         self.obs, self.a, self.m, self.c, self.r, self.d = obs, a, m, c, r, d
@@ -72,6 +79,8 @@ class RLRows:
 
 @torch.no_grad()
 def rl_rows(seeds, cfg: EnvConfig, actions, channels, H=1) -> RLRows:
+    """expert_rows() replays the plan and discards the reward. This keeps it, and gets next observations by
+    index-shifting one time-block rather than storing them."""
     env = CommEnv(cfg, seeds)
     obs = env.reset()
     S, N, T = env.B, cfg.n_agents, cfg.T
@@ -84,7 +93,7 @@ def rl_rows(seeds, cfg: EnvConfig, actions, channels, H=1) -> RLRows:
         a_l.append(Ap[:, t:t + H].permute(0, 2, 1, 3).reshape(S * N, H, 2))
         m_l.append(((torch.arange(H) + t) < T).unsqueeze(0).expand(S * N, H))
         c_l.append(Cc[:, t].reshape(-1))
-        obs, r, done, _ = env.step(A[:, t], Cc[:, t])
+        obs, r, _, _ = env.step(A[:, t], Cc[:, t])
         r_l.append(r.reshape(S, 1).expand(S, N).reshape(-1).float())       # shared team reward
         d_l.append(torch.full((S * N,), 1.0 if t == T - 1 else 0.0))
     O.append(obs.flat())                                                   # trailing block = next_obs of t=T-1
@@ -95,8 +104,10 @@ def rl_rows(seeds, cfg: EnvConfig, actions, channels, H=1) -> RLRows:
 
 @torch.no_grad()
 def pair_rows(seeds, cfg: EnvConfig, aA, cA, aB, cB, H=1) -> RLRows:
-    """Two actions per visited state. Branch A is committed, branch B is evaluated and rolled back.
-    CommEnv's entire mutable state is (uav, ch, t, prev), so save/step/restore is exact."""
+    """Two actions per visited state. Branch A is committed, branch B evaluated and rolled back.
+    CommEnv's whole mutable state is (uav, ch, t, prev), so save/step/restore is exact.
+    Row order, which solver_weights() depends on: one (t, branch) block of S*N rows, A before B,
+    scenario-major within a block."""
     env = CommEnv(cfg, seeds)
     obs = env.reset()
     S, N, T = env.B, cfg.n_agents, cfg.T
@@ -124,6 +135,7 @@ def pair_rows(seeds, cfg: EnvConfig, aA, cA, aB, cB, H=1) -> RLRows:
     return RLRows(cat(O), torch.cat(a_l), torch.cat(m_l), torch.cat(c_l), torch.cat(r_l),
                   torch.cat(d_l), nobs=cat(NO), src=torch.cat(s_l))
 
+
 # ----------------------------------------------------------------------------- critics
 class VNet(nn.Module):
     def __init__(self, cfg: EnvConfig, d=128):
@@ -147,22 +159,23 @@ class QNet(nn.Module):
         return self.head(torch.cat([h, a, F.one_hot(c, self.C).float()], -1)).squeeze(-1)
 
 
-def expectile_loss(u, tau):
-    return (torch.abs(tau - (u < 0).float()) * u ** 2).mean()
-
 def fm(o: Obs, idx, N):
-    """Full-state masks: every user and every other UAV visible to the critic.
-    commenv.full_masks infers the agent index from row position, which is wrong once the batch is
-    shuffled. Rows are scenario-major within each time block, so agent = global index % N."""
+    """Full-state masks for a centralised critic: every user, every other UAV.
+    commenv.full_masks infers the agent index from row position, which is wrong once a batch is shuffled;
+    rows are scenario-major within each time block, so agent = global index % N."""
     um = torch.ones_like(o.um)
     am = torch.ones_like(o.am)
     am[torch.arange(am.shape[0], device=am.device), idx % N] = False
     return um, am
 
 
+def expectile_loss(u, tau):
+    return (torch.abs(tau - (u < 0).float()) * u ** 2).mean()
+
+
 # ----------------------------------------------------------------------------- actor loss, per sample
 def awr_loss(model, o: Obs, a_chunk, mask, c, w, w_chunk=0.5, w_ch=1.0):
-    """models.StudentActor.bc_loss, but per-sample so the advantage weights can be applied."""
+    """models.StudentActor.bc_loss, per-sample so advantage weights can be applied. w = 1 reproduces it."""
     h = model.enc(o)
     a0 = a_chunk[:, 0]
     if model.mdn_k > 0:
@@ -184,10 +197,41 @@ def awr_loss(model, o: Obs, a_chunk, mask, c, w, w_chunk=0.5, w_ch=1.0):
     return (w * per).mean(), stats
 
 
-# ----------------------------------------------------------------------------- training
-def train_iql(model, ema, rows: RLRows, cfg, dev, a, log=print):
+# ----------------------------------------------------------------------------- weights
+def report(W, n, tag, log):
+    neff = float(W.sum() ** 2 / (W ** 2).sum())
+    log(f"    weights[{tag}]: mean {float(W.mean()):.3f}  p50 {float(W.median()):.3f}  "
+        f"p99 {float(W.quantile(0.99)):.3f}  max {float(W.max()):.3f}  "
+        f"n_eff {neff:.0f}/{n} ({100 * neff / n:.1f}%)")
+
+
+def solver_weights(a, cfg, n, dev, log):
+    """Exact advantages from solver_advantages.py. No critic is constructed or trained."""
+    d = torch.load(a.solver_adv, map_location="cpu", weights_only=False)
+    A_a, A_b = torch.as_tensor(d["adv_a"]).float(), torch.as_tensor(d["adv_b"]).float()
+    S_, T_ = A_a.shape
+    N = cfg.n_agents
+    if a.weight_mode == "awr":
+        adv = torch.cat([A[:, t].repeat_interleave(N) for t in range(T_) for A in (A_a, A_b)])
+        log(f"    solver advantages: mean {float(adv.mean()):+.3f}  sd {float(adv.std()):.3f}  "
+            f"p1 {float(adv.quantile(0.01)):+.3f}  p99 {float(adv.quantile(0.99)):+.3f}")
+        W = torch.exp(a.beta * adv).clamp(max=a.w_max)
+    else:
+        sel = (A_a > 0) if a.weight_mode == "hard" else \
+              (torch.rand(S_, T_, generator=torch.Generator().manual_seed(a.seed)) < 0.5)
+        log(f"    {a.weight_mode} selection: branch A kept at {float(sel.float().mean()):.3f} of states")
+        W = torch.cat([s.float().repeat_interleave(N) for t in range(T_) for s in (sel[:, t], ~sel[:, t])])
+    if len(W) != n:
+        raise SystemExit(f"solver weights {len(W)} != rows {n}; the advantage file and the dataset disagree "
+                         f"(scenarios {S_}, steps {T_}, agents {N})")
+    W = (W / W.mean()).to(dev)
+    report(W, n, a.weight_mode, log)
+    return W
+
+
+def learned_weights(rows: RLRows, cfg, dev, a, log):
+    """Standard IQL: train V and Q, then w = min(exp(beta A), w_max) with A = Q_target - V."""
     n = len(rows)
-    rows = rows.to(dev)
     V, Q = VNet(cfg, a.d).to(dev), QNet(cfg, a.d).to(dev)
     Qt = copy.deepcopy(Q).to(dev)
     for p in Qt.parameters():
@@ -196,24 +240,6 @@ def train_iql(model, ema, rows: RLRows, cfg, dev, a, log=print):
     optQ = torch.optim.AdamW(Q.parameters(), lr=a.critic_lr, weight_decay=1e-4)
     g = torch.Generator().manual_seed(a.seed)
     idx_all = torch.arange(n, device=dev)
-
-    if a.solver_adv:
-        d = torch.load(a.solver_adv, map_location="cpu", weights_only=False)
-        A_a = torch.as_tensor(d["adv_a"]).float()  # [S, T]
-        A_b = torch.as_tensor(d["adv_b"]).float()
-        S_, T_ = A_a.shape
-        N = cfg.n_agents
-        adv = torch.cat([A[:, t].repeat_interleave(N)
-                         for t in range(T_) for A in (A_a, A_b)]).to(dev)
-        log(f"    solver advantages: mean {float(adv.mean()):+.3f}  sd {float(adv.std()):.3f}")
-        W = torch.exp(a.beta * adv).clamp(max=a.w_max)
-        W = W / W.mean()
-        n_eff = float(W.sum() ** 2 / (W ** 2).sum())
-        log(f"    AWR weights: p50 {float(W.median()):.3f}  p99 {float(W.quantile(0.99)):.3f}  "
-            f"n_eff {n_eff:.0f}/{len(W)} ({100 * n_eff / len(W):.1f}%)")
-        # skip phases 1 and the learned-weight block entirely; go straight to the actor
-
-    # ---- phase 1: critics
     t0 = time.time()
     for ep in range(a.critic_epochs):
         perm = torch.randperm(n, generator=g).to(dev)
@@ -225,10 +251,8 @@ def train_iql(model, ema, rows: RLRows, cfg, dev, a, log=print):
             with torch.no_grad():
                 q_t = Qt(r.obs, r.a[:, 0], r.c, um, am)
             lv = expectile_loss(q_t - V(r.obs, um, am), a.tau)
-            optV.zero_grad(set_to_none=True);
-            lv.backward()
-            nn.utils.clip_grad_norm_(V.parameters(), 1.0);
-            optV.step()
+            optV.zero_grad(set_to_none=True); lv.backward()
+            nn.utils.clip_grad_norm_(V.parameters(), 1.0); optV.step()
             with torch.no_grad():
                 target = r.r + a.gamma * (1.0 - r.d) * V(nobs, um, am)
             lq = F.mse_loss(Q(r.obs, r.a[:, 0], r.c, um, am), target)
@@ -238,9 +262,9 @@ def train_iql(model, ema, rows: RLRows, cfg, dev, a, log=print):
                 for pt, p in zip(Qt.parameters(), Q.parameters()):
                     pt.mul_(1 - a.polyak).add_(p.detach(), alpha=a.polyak)
         if (ep + 1) % 10 == 0 or ep == 0:
-            log(f"    critic ep {ep+1:3d}/{a.critic_epochs}  L_V {float(lv):8.4f}  L_Q {float(lq):8.4f}  {time.time()-t0:.0f}s")
+            log(f"    critic ep {ep+1:3d}/{a.critic_epochs}  L_V {float(lv.detach()):8.4f}  "
+                f"L_Q {float(lq.detach()):8.4f}  {time.time()-t0:.0f}s")
 
-    # ---- advantage weights, computed once with the frozen critics
     with torch.no_grad():
         A_ = []
         for i in range(0, n, 8192):
@@ -260,19 +284,25 @@ def train_iql(model, ema, rows: RLRows, cfg, dev, a, log=print):
             log(f"    adv by source: first-{a.src_split} {float(adv[first].mean()):+.3f}  "
                 f"rest {float(adv[~first].mean()):+.3f}  "
                 f"gap {float(adv[~first].mean() - adv[first].mean()):+.3f}")
-        log(f"    advantages: mean {float(adv.mean()):+.3f}  sd {float(adv.std()):.3f}  "
+        log(f"    learned advantages: mean {float(adv.mean()):+.3f}  sd {float(adv.std()):.3f}  "
             f"p1 {float(adv.quantile(0.01)):+.3f}  p99 {float(adv.quantile(0.99)):+.3f}")
         if a.adv_norm:
             adv = (adv - adv.mean()) / (adv.std() + 1e-6)
         W = torch.exp(a.beta * adv).clamp(max=a.w_max)
         W = W / W.mean()
-        n_eff = float(W.sum() ** 2 / (W ** 2).sum())
-        log(f"    AWR weights: mean {float(W.mean()):.3f}  p50 {float(W.median()):.3f}  "
-            f"p99 {float(W.quantile(0.99)):.3f}  max {float(W.max()):.3f}  "
-            f"n_eff {n_eff:.0f}/{n} ({100 * n_eff / n:.1f}%)")
+        report(W, n, "learned", log)
+    return W
 
-    # ---- phase 2: advantage-weighted behaviour cloning
+
+# ----------------------------------------------------------------------------- training
+def train_iql(model, ema, rows: RLRows, cfg, dev, a, log=print):
+    n = len(rows)
+    rows = rows.to(dev)
+    # exactly one weight source; --solver_adv means no critic exists at all
+    W = solver_weights(a, cfg, n, dev, log) if a.solver_adv else learned_weights(rows, cfg, dev, a, log)
+
     model.to(dev).train(); ema.to(dev)
+    g = torch.Generator().manual_seed(a.seed)
     spe = math.ceil(n / a.bs); total = max(1, a.epochs0 * spe); warm = max(1, int(0.03 * total))
     opt = torch.optim.AdamW(model.parameters(), lr=a.lr, weight_decay=a.wd)
     sched = torch.optim.lr_scheduler.LambdaLR(
@@ -283,7 +313,7 @@ def train_iql(model, ema, rows: RLRows, cfg, dev, a, log=print):
         for i in range(0, n, a.bs):
             idx = perm[i:i + a.bs]
             r = rows.index(idx)
-            ob, aa = (augment2(r.obs, r.a, g, a.obs_extra) if not a.no_aug else (r.obs, r.a))
+            ob, aa = (r.obs, r.a) if a.no_aug else augment2(r.obs, r.a, g, a.obs_extra)
             loss, st = awr_loss(model, ob, aa, r.m, r.c, W[idx], w_chunk=a.w_chunk)
             opt.zero_grad(set_to_none=True); loss.backward()
             nn.utils.clip_grad_norm_(model.parameters(), 1.0); opt.step(); sched.step()
@@ -292,8 +322,8 @@ def train_iql(model, ema, rows: RLRows, cfg, dev, a, log=print):
                 for pe, p in zip(ema.parameters(), model.parameters()):
                     pe.mul_(dcy).add_(p.detach(), alpha=1 - dcy)
         if (ep + 1) % 10 == 0 or ep == 0 or ep + 1 == a.epochs0:
-            log(f"    actor  ep {ep+1:4d}/{a.epochs0}  loss {float(loss.detach()):8.4f}  mse0 {st['mse0']:.4f} "
-                f"acc {st['acc']:.3f}  {time.time()-t0:.0f}s")
+            log(f"    actor  ep {ep+1:4d}/{a.epochs0}  loss {float(loss.detach()):8.4f}  "
+                f"mse0 {st['mse0']:.4f} acc {st['acc']:.3f}  {time.time()-t0:.0f}s")
     return ema
 
 
@@ -302,23 +332,29 @@ def main():
     add_student_args(ap)
     ap.add_argument("--name", default="iql")
     ap.add_argument("--out", default="results2")
+    # learned critic
     ap.add_argument("--tau", type=float, default=0.8, help="expectile; ->1 is more optimistic")
-    ap.add_argument("--beta", type=float, default=3.0, help="AWR inverse temperature")
-    ap.add_argument("--w_max", type=float, default=100.0)
     ap.add_argument("--gamma", type=float, default=0.99)
     ap.add_argument("--polyak", type=float, default=0.005)
     ap.add_argument("--critic_epochs", type=int, default=60)
     ap.add_argument("--critic_lr", type=float, default=3e-4)
+    ap.add_argument("--critic_full", action="store_true", help="centralised critic: full state, masked actor")
+    ap.add_argument("--adv_norm", action="store_true", help="standardise advantages so beta is scale-free")
+    ap.add_argument("--src_split", type=int, default=0, help="diagnostic: scenarios in the first source half")
+    # weighting
+    ap.add_argument("--beta", type=float, default=3.0, help="AWR inverse temperature; 0 reproduces plain BC")
+    ap.add_argument("--w_max", type=float, default=100.0)
+    ap.add_argument("--solver_adv", default=None, help="advantages from solver_advantages.py; no critic is trained")
+    ap.add_argument("--weight_mode", default="awr", choices=["awr", "hard", "rand"])
+    # data
+    ap.add_argument("--pairs_data", default=None, help="dataset from make_pairs.py; overrides --train_data")
     ap.add_argument("--n_monitor", type=int, default=128)
     ap.add_argument("--smoke", action="store_true")
-    ap.add_argument("--adv_norm", action="store_true")
-    ap.add_argument("--src_split", type=int, default=0)
-    ap.add_argument("--critic_full", action="store_true")
-    ap.add_argument("--pairs_data", default=None, help="dataset from make_pairs.py; overrides --train_data")
-    ap.add_argument("--solver_adv", default=None)
     a = ap.parse_args()
     if a.smoke:
         a.epochs0, a.critic_epochs, a.n_monitor = 2, 2, 8
+    if a.weight_mode != "awr" and not a.solver_adv:
+        raise SystemExit("--weight_mode hard/rand needs --solver_adv")
 
     opts = student_opts(a)
     cfg = cfg_from_opts(opts)
@@ -327,8 +363,12 @@ def main():
     logf = open(os.path.join(run_dir, "log.txt"), "a")
 
     def log(*s):
-        print(*s, flush=True);
-        print(*s, file=logf, flush=True)
+        print(*s, flush=True); print(*s, file=logf, flush=True)
+
+    src = "solver" if a.solver_adv else "learned"
+    log(f"== {a.name} seed {a.seed}  opts={opts}  device={a.device}  weights={src}/{a.weight_mode} "
+        f"beta={a.beta}" + ("" if a.solver_adv else f" tau={a.tau} critic_epochs={a.critic_epochs} "
+                            f"critic_full={a.critic_full}"))
 
     if a.pairs_data:
         d = torch.load(a.pairs_data, map_location="cpu", weights_only=False)
@@ -336,14 +376,13 @@ def main():
         k = len(seeds)
         rows = pair_rows(seeds, cfg, d["actions_a"][:k], d["channels_a"][:k],
                          d["actions_b"][:k], d["channels_b"][:k], H=opts["chunk"])
-        log(f"rows: {len(rows)} (paired; {k} scenarios x 2 branches)")
+        log(f"rows: {len(rows)}  (paired; {k} scenarios x 2 branches)")
     else:
-        log(f"== {a.name} seed {a.seed}  opts={opts}  device={a.device}  "
-            f"iql(tau={a.tau}, beta={a.beta}, gamma={a.gamma}, critic_epochs={a.critic_epochs})")
         d = torch.load(a.train_data, map_location="cpu", weights_only=False)
         seeds = d["seeds"][:60] if a.smoke else d["seeds"]
         rows = rl_rows(seeds, cfg, d["actions"][:len(seeds)], d["channels"][:len(seeds)], H=opts["chunk"])
-        log(f"rows: {len(rows)}  (demonstrator return {float(torch.as_tensor(d['expert_return']).mean()):.2f})")
+        log(f"rows: {len(rows)}  (demonstrator return "
+            f"{float(torch.as_tensor(d['expert_return']).mean()):.2f})")
 
     torch.manual_seed(a.seed)
     model = make_student(opts)
@@ -355,7 +394,9 @@ def main():
     log(f"[iql] closed-loop {ret:.2f} on {a.n_monitor} monitor scenarios")
     save_student(os.path.join(run_dir, "best.pt"), ema, opts)
     json.dump(dict(name=a.name, seed=a.seed, opts=opts, monitor_return_best=ret,
-                   iql=dict(tau=a.tau, beta=a.beta, gamma=a.gamma, critic_epochs=a.critic_epochs)),
+                   weights=dict(source=src, mode=a.weight_mode, beta=a.beta, tau=a.tau,
+                                critic_epochs=(0 if a.solver_adv else a.critic_epochs),
+                                critic_full=a.critic_full)),
               open(os.path.join(run_dir, "summary.json"), "w"), indent=1)
     log(f"saved {run_dir}/best.pt")
 

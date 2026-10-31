@@ -1,0 +1,22 @@
+{
+ "name": "P_hard",
+ "seed": 0,
+ "opts": {
+  "k": 6.0,
+  "d": 128,
+  "mdn_k": 5,
+  "chunk": 4,
+  "obs_extra": false,
+  "k_a": -1.0,
+  "bcast": 6
+ },
+ "monitor_return_best": 83.10120391845703,
+ "weights": {
+  "source": "solver",
+  "mode": "hard",
+  "beta": 0.0,
+  "tau": 0.8,
+  "critic_epochs": 0,
+  "critic_full": false
+ }
+}

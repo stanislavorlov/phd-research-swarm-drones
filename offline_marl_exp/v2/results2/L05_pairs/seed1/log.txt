@@ -1,0 +1,45 @@
+== L05_pairs seed 1  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6}  device=cuda  weights=learned/awr beta=0.5 tau=0.8 critic_epochs=60 critic_full=False
+rows: 96000  (paired; 300 scenarios x 2 branches)
+    critic ep   1/60  L_V   0.0000  L_Q   4.5334  2s
+    critic ep  10/60  L_V   0.0023  L_Q   1.5883  9s
+    critic ep  20/60  L_V   0.2175  L_Q   6.7934  18s
+    critic ep  30/60  L_V   0.2023  L_Q   3.7614  27s
+    critic ep  40/60  L_V   0.2281  L_Q   1.5908  35s
+    critic ep  50/60  L_V   0.2194  L_Q   1.9956  44s
+    critic ep  60/60  L_V   0.2114  L_Q   3.2028  51s
+    adv by branch: committed -0.857  counterfactual -0.857  gap -0.000
+    learned advantages: mean -0.857  sd 0.723  p1 -2.683  p99 +0.890
+    weights[learned]: mean 1.000  p50 0.944  p99 2.241  max 11.819  n_eff 82705/96000 (86.2%)
+    actor  ep    1/300  loss   2.6885  mse0 0.2092 acc 0.836  0s
+    actor  ep   10/300  loss   1.0012  mse0 0.2350 acc 0.917  3s
+    actor  ep   20/300  loss   0.6136  mse0 0.2347 acc 0.933  7s
+    actor  ep   30/300  loss   0.5651  mse0 0.2332 acc 0.920  10s
+    actor  ep   40/300  loss   0.4498  mse0 0.2647 acc 0.902  13s
+    actor  ep   50/300  loss   0.4719  mse0 0.2541 acc 0.914  16s
+    actor  ep   60/300  loss   0.3589  mse0 0.2401 acc 0.908  19s
+    actor  ep   70/300  loss   0.3871  mse0 0.2482 acc 0.912  23s
+    actor  ep   80/300  loss   0.2214  mse0 0.2141 acc 0.925  26s
+    actor  ep   90/300  loss   0.2264  mse0 0.2300 acc 0.912  29s
+    actor  ep  100/300  loss   0.1268  mse0 0.2239 acc 0.924  33s
+    actor  ep  110/300  loss   0.2220  mse0 0.2355 acc 0.920  36s
+    actor  ep  120/300  loss   0.1618  mse0 0.2365 acc 0.925  40s
+    actor  ep  130/300  loss   0.2387  mse0 0.2247 acc 0.919  44s
+    actor  ep  140/300  loss   0.1832  mse0 0.2283 acc 0.921  48s
+    actor  ep  150/300  loss   0.0985  mse0 0.2230 acc 0.925  52s
+    actor  ep  160/300  loss   0.1767  mse0 0.2205 acc 0.930  55s
+    actor  ep  170/300  loss   0.1280  mse0 0.2303 acc 0.921  59s
+    actor  ep  180/300  loss   0.1915  mse0 0.2381 acc 0.925  63s
+    actor  ep  190/300  loss   0.0931  mse0 0.2323 acc 0.923  67s
+    actor  ep  200/300  loss   0.1061  mse0 0.2262 acc 0.929  70s
+    actor  ep  210/300  loss   0.1189  mse0 0.2266 acc 0.915  74s
+    actor  ep  220/300  loss   0.0899  mse0 0.2184 acc 0.916  78s
+    actor  ep  230/300  loss   0.1330  mse0 0.2211 acc 0.916  81s
+    actor  ep  240/300  loss   0.0344  mse0 0.2247 acc 0.914  85s
+    actor  ep  250/300  loss   0.0654  mse0 0.2214 acc 0.934  88s
+    actor  ep  260/300  loss   0.1408  mse0 0.2465 acc 0.917  92s
+    actor  ep  270/300  loss   0.0827  mse0 0.2413 acc 0.926  95s
+    actor  ep  280/300  loss   0.0456  mse0 0.2178 acc 0.910  99s
+    actor  ep  290/300  loss  -0.0113  mse0 0.2200 acc 0.924  102s
+    actor  ep  300/300  loss  -0.0174  mse0 0.2237 acc 0.915  105s
+[iql] closed-loop 74.19 on 128 monitor scenarios
+saved results2/L05_pairs/seed1/best.pt
