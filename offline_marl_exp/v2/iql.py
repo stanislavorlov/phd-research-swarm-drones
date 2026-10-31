@@ -37,27 +37,35 @@ from bc2 import Rows, add_student_args, student_opts, cfg_from_opts, make_studen
 
 # ----------------------------------------------------------------------------- data with rewards
 class RLRows:
-    """Rows plus what offline RL needs: team reward, next observation, terminal flag.
+    """Rows plus reward, next observation and terminal flag.
 
-    expert_rows() replays the plan and throws the reward away. This keeps it. Observations are stored one
-    time-block after another (S*N rows per step), so the next observation of a row is the SAME row index one
-    block later -- no second replay, no extra memory beyond one trailing block."""
+    `blk` set  -> next_obs() shifts one time-block (rl_rows, single trajectory).
+    `nobs` set -> next_obs() indexes it directly (pair_rows, branches leave the trajectory).
+    `src` tags the branch: 0 = committed/strong, 1 = counterfactual/weak."""
 
-    def __init__(self, obs: Obs, a, m, c, r, d, blk):
-        self.obs, self.a, self.m, self.c, self.r, self.d, self.blk = obs, a, m, c, r, d, blk
+    def __init__(self, obs, a, m, c, r, d, blk=None, nobs=None, src=None):
+        self.obs, self.a, self.m, self.c, self.r, self.d = obs, a, m, c, r, d
+        self.blk, self.nobs, self.src = blk, nobs, src
 
     def __len__(self):
         return self.a.shape[0]
 
     def to(self, dev):
-        return RLRows(Obs(*[x.to(dev) for x in self.obs]), self.a.to(dev), self.m.to(dev), self.c.to(dev),
-                      self.r.to(dev), self.d.to(dev), self.blk)
+        mv = lambda o: Obs(*[x.to(dev) for x in o])
+        return RLRows(mv(self.obs), self.a.to(dev), self.m.to(dev), self.c.to(dev),
+                      self.r.to(dev), self.d.to(dev), self.blk,
+                      None if self.nobs is None else mv(self.nobs),
+                      None if self.src is None else self.src.to(dev))
 
     def index(self, idx):
-        return RLRows(self.obs.index(idx), self.a[idx], self.m[idx], self.c[idx], self.r[idx], self.d[idx], self.blk)
+        return RLRows(self.obs.index(idx), self.a[idx], self.m[idx], self.c[idx],
+                      self.r[idx], self.d[idx], self.blk,
+                      None if self.nobs is None else self.nobs.index(idx),
+                      None if self.src is None else self.src[idx])
 
     def next_obs(self, idx):
-        """Observation after the transition. Terminal rows point at themselves; their target is masked by d."""
+        if self.nobs is not None:
+            return self.nobs.index(idx)
         nxt = torch.where(self.d[idx] > 0.5, idx, idx + self.blk)
         return self.obs.index(nxt)
 
@@ -84,6 +92,37 @@ def rl_rows(seeds, cfg: EnvConfig, actions, channels, H=1) -> RLRows:
     return RLRows(cat(O), torch.cat(a_l), torch.cat(m_l), torch.cat(c_l),
                   torch.cat(r_l), torch.cat(d_l), blk=S * N)
 
+
+@torch.no_grad()
+def pair_rows(seeds, cfg: EnvConfig, aA, cA, aB, cB, H=1) -> RLRows:
+    """Two actions per visited state. Branch A is committed, branch B is evaluated and rolled back.
+    CommEnv's entire mutable state is (uav, ch, t, prev), so save/step/restore is exact."""
+    env = CommEnv(cfg, seeds)
+    obs = env.reset()
+    S, N, T = env.B, cfg.n_agents, cfg.T
+    aA, cA = torch.as_tensor(aA).float(), torch.as_tensor(cA).long()
+    aB, cB = torch.as_tensor(aB).float(), torch.as_tensor(cB).long()
+    pad = lambda x: torch.cat([x, torch.zeros(S, max(H - 1, 0), N, 2)], 1)
+    ApA, ApB = pad(aA), pad(aB)
+    O, NO, a_l, m_l, c_l, r_l, d_l, s_l = [], [], [], [], [], [], [], []
+    for t in range(T):
+        o_t = obs.flat()
+        st = (env.uav.clone(), env.ch.clone(), env.t, env.prev.clone())
+        for br, (Ap, A_, C_) in enumerate(((ApA, aA, cA), (ApB, aB, cB))):
+            env.uav, env.ch, env.t, env.prev = st[0].clone(), st[1].clone(), st[2], st[3].clone()
+            no, r, _, _ = env.step(A_[:, t], C_[:, t])
+            O.append(o_t); NO.append(no.flat())
+            a_l.append(Ap[:, t:t + H].permute(0, 2, 1, 3).reshape(S * N, H, 2))
+            m_l.append(((torch.arange(H) + t) < T).unsqueeze(0).expand(S * N, H))
+            c_l.append(C_[:, t].reshape(-1))
+            r_l.append(r.reshape(S, 1).expand(S, N).reshape(-1).float())
+            d_l.append(torch.full((S * N,), 1.0 if t == T - 1 else 0.0))
+            s_l.append(torch.full((S * N,), float(br)))
+        env.uav, env.ch, env.t, env.prev = st[0].clone(), st[1].clone(), st[2], st[3].clone()
+        obs, _, _, _ = env.step(aA[:, t], cA[:, t])
+    cat = lambda lst: Obs(*[torch.cat([getattr(o, f) for o in lst], 0) for f in Obs._fields])
+    return RLRows(cat(O), torch.cat(a_l), torch.cat(m_l), torch.cat(c_l), torch.cat(r_l),
+                  torch.cat(d_l), nobs=cat(NO), src=torch.cat(s_l))
 
 # ----------------------------------------------------------------------------- critics
 class VNet(nn.Module):
@@ -158,6 +197,22 @@ def train_iql(model, ema, rows: RLRows, cfg, dev, a, log=print):
     g = torch.Generator().manual_seed(a.seed)
     idx_all = torch.arange(n, device=dev)
 
+    if a.solver_adv:
+        d = torch.load(a.solver_adv, map_location="cpu", weights_only=False)
+        A_a = torch.as_tensor(d["adv_a"]).float()  # [S, T]
+        A_b = torch.as_tensor(d["adv_b"]).float()
+        S_, T_ = A_a.shape
+        N = cfg.n_agents
+        adv = torch.cat([A[:, t].repeat_interleave(N)
+                         for t in range(T_) for A in (A_a, A_b)]).to(dev)
+        log(f"    solver advantages: mean {float(adv.mean()):+.3f}  sd {float(adv.std()):.3f}")
+        W = torch.exp(a.beta * adv).clamp(max=a.w_max)
+        W = W / W.mean()
+        n_eff = float(W.sum() ** 2 / (W ** 2).sum())
+        log(f"    AWR weights: p50 {float(W.median()):.3f}  p99 {float(W.quantile(0.99)):.3f}  "
+            f"n_eff {n_eff:.0f}/{len(W)} ({100 * n_eff / len(W):.1f}%)")
+        # skip phases 1 and the learned-weight block entirely; go straight to the actor
+
     # ---- phase 1: critics
     t0 = time.time()
     for ep in range(a.critic_epochs):
@@ -194,7 +249,12 @@ def train_iql(model, ema, rows: RLRows, cfg, dev, a, log=print):
             um, am = fm(r.obs, idx, cfg.n_agents) if a.critic_full else (None, None)
             A_.append(Qt(r.obs, r.a[:, 0], r.c, um, am) - V(r.obs, um, am))
         adv = torch.cat(A_)
-        if a.src_split > 0:
+        if rows.src is not None:
+            s0, s1 = rows.src < 0.5, rows.src > 0.5
+            log(f"    adv by branch: committed {float(adv[s0].mean()):+.3f}  "
+                f"counterfactual {float(adv[s1].mean()):+.3f}  "
+                f"gap {float(adv[s0].mean() - adv[s1].mean()):+.3f}")
+        elif a.src_split > 0:
             scen = (idx_all % rows.blk) // cfg.n_agents
             first = scen < a.src_split
             log(f"    adv by source: first-{a.src_split} {float(adv[first].mean()):+.3f}  "
@@ -254,6 +314,8 @@ def main():
     ap.add_argument("--adv_norm", action="store_true")
     ap.add_argument("--src_split", type=int, default=0)
     ap.add_argument("--critic_full", action="store_true")
+    ap.add_argument("--pairs_data", default=None, help="dataset from make_pairs.py; overrides --train_data")
+    ap.add_argument("--solver_adv", default=None)
     a = ap.parse_args()
     if a.smoke:
         a.epochs0, a.critic_epochs, a.n_monitor = 2, 2, 8
@@ -265,14 +327,23 @@ def main():
     logf = open(os.path.join(run_dir, "log.txt"), "a")
 
     def log(*s):
-        print(*s, flush=True); print(*s, file=logf, flush=True)
+        print(*s, flush=True);
+        print(*s, file=logf, flush=True)
 
-    log(f"== {a.name} seed {a.seed}  opts={opts}  device={a.device}  "
-        f"iql(tau={a.tau}, beta={a.beta}, gamma={a.gamma}, critic_epochs={a.critic_epochs})")
-    d = torch.load(a.train_data, map_location="cpu", weights_only=False)
-    seeds = d["seeds"][:60] if a.smoke else d["seeds"]
-    rows = rl_rows(seeds, cfg, d["actions"][:len(seeds)], d["channels"][:len(seeds)], H=opts["chunk"])
-    log(f"rows: {len(rows)}  (demonstrator return {float(torch.as_tensor(d['expert_return']).mean()):.2f})")
+    if a.pairs_data:
+        d = torch.load(a.pairs_data, map_location="cpu", weights_only=False)
+        seeds = d["seeds"][:60] if a.smoke else d["seeds"]
+        k = len(seeds)
+        rows = pair_rows(seeds, cfg, d["actions_a"][:k], d["channels_a"][:k],
+                         d["actions_b"][:k], d["channels_b"][:k], H=opts["chunk"])
+        log(f"rows: {len(rows)} (paired; {k} scenarios x 2 branches)")
+    else:
+        log(f"== {a.name} seed {a.seed}  opts={opts}  device={a.device}  "
+            f"iql(tau={a.tau}, beta={a.beta}, gamma={a.gamma}, critic_epochs={a.critic_epochs})")
+        d = torch.load(a.train_data, map_location="cpu", weights_only=False)
+        seeds = d["seeds"][:60] if a.smoke else d["seeds"]
+        rows = rl_rows(seeds, cfg, d["actions"][:len(seeds)], d["channels"][:len(seeds)], H=opts["chunk"])
+        log(f"rows: {len(rows)}  (demonstrator return {float(torch.as_tensor(d['expert_return']).mean()):.2f})")
 
     torch.manual_seed(a.seed)
     model = make_student(opts)
