@@ -1,0 +1,6 @@
+nohup: ignoring input
++ C='--seeds 0 1 2 --arms masked --iters 450 --lr_actor 3e-4 --init_std 0.2 --critic_warmup 100 --final --out results2/online'
++ python3 online2.py --ckpt 'results2/P_hard/seed{s}/best.pt' --seeds 0 1 2 --arms masked --iters 450 --lr_actor 3e-4 --init_std 0.2 --critic_warmup 100 --final --out results2/online --tag ft_hard
++ python3 online2.py --ckpt 'results2/Q_strong/seed{s}/best.pt' --seeds 0 1 2 --arms masked --iters 450 --lr_actor 3e-4 --init_std 0.2 --critic_warmup 100 --final --out results2/online --tag ft_bc
++ python3 online2.py --ckpt 'results2/P_hard/seed{s}/best.pt' --seeds 0 1 2 --arms masked --iters 450 --lr_actor 3e-4 --init_std 0.2 --critic_warmup 100 --final --out results2/online --tag ft_scratch --scratch
+ --scratch

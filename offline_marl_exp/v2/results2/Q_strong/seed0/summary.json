@@ -25,7 +25,7 @@
   "lr": 0.002,
   "wd": 0.0001,
   "w_chunk": 0.5,
-  "device": "cpu",
+  "device": "cuda",
   "seed": 0,
   "train_data": "data/expert_train.pt",
   "val_data": "data/expert_val.pt",
@@ -49,16 +49,16 @@
  "hist": [
   {
    "round": 0,
-   "monitor_return": 89.77274322509766,
-   "norm": 0.5896902084350586,
-   "val_mse0": 0.0886991290152073,
-   "val_acc": 0.8679375128746033,
+   "monitor_return": 88.87052917480469,
+   "norm": 0.5563291311264038,
+   "val_mse0": 0.09066252785921097,
+   "val_acc": 0.8685624885559082,
    "n_rows": 96000
   }
  ],
  "best_round": 0,
- "monitor_norm_best": 0.5896902084350586,
- "monitor_return_best": 89.77274322509766,
- "monitor_expert": 117.04193115234375,
- "monitor_stay": 49.83129119873047
+ "monitor_norm_best": 0.5563291311264038,
+ "monitor_return_best": 88.87052917480469,
+ "monitor_expert": 117.03034973144531,
+ "monitor_stay": 49.831295013427734
 }

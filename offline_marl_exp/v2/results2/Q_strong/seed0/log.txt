@@ -8,3 +8,11 @@ monitor refs: stay-put 49.83  expert 117.03  (9s)
     ep   90/300  loss  -0.7737 | EMA train mse0 0.0918 acc 0.882 | val mse0 0.0913 acc 0.869 | 35s
     ep  120/300  loss  -0.9779 | EMA train mse0 0.0906 acc 0.882 | val mse0 0.0914 acc 0.869 | 47s
     ep  150/300  loss  -1.0298 | EMA train mse0 0.0899 acc 0.883 | val mse0 0.0914 acc 0.869 | 58s
+    ep  180/300  loss  -1.1366 | EMA train mse0 0.0902 acc 0.883 | val mse0 0.0908 acc 0.869 | 70s
+    ep  210/300  loss  -1.1499 | EMA train mse0 0.0899 acc 0.883 | val mse0 0.0900 acc 0.869 | 81s
+    ep  240/300  loss  -1.1588 | EMA train mse0 0.0895 acc 0.883 | val mse0 0.0902 acc 0.868 | 93s
+    ep  270/300  loss  -1.1732 | EMA train mse0 0.0895 acc 0.883 | val mse0 0.0909 acc 0.869 | 105s
+    ep  300/300  loss  -1.2476 | EMA train mse0 0.0896 acc 0.883 | val mse0 0.0907 acc 0.869 | 115s
+[round 0] closed-loop 88.87  expert-normalised 0.556  val mse0 0.0907 acc 0.869
+best round by monitor: 0  norm 0.556
+wrote results2/Q_strong/seed0/summary.json
