@@ -89,6 +89,7 @@ def main():
     # ---- round-0 data: open-loop expert replayed through the env (so obs_extra etc. are the env's own)
     def load(path, n=None):
         d = torch.load(path, weights_only=False)
+        bc2.assert_env_match(cfg, d.get("cfg"), path)
         s, A, C = d["seeds"], d["actions"], d["channels"]
         if n:
             s, A, C = s[:n], A[:n], C[:n]

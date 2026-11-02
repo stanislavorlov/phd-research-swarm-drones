@@ -18,18 +18,19 @@ import numpy as np
 import torch
 
 from commenv import EnvConfig, StayPut
+from bc2 import assert_env_match
 from evalproto import returns, paired_diff, expert_normalised, seed_level_ci
 from bc2 import load_student, closed_loop, expert_returns_on
 
 FINAL0 = 800_000          # dev set (default); --seed0 900000 selects the frozen test set
 
 
-def refs(seed0, n, device, path, plan_kw=None):
+def refs(seed0, n, device, path, plan_kw=None, cfg=None):
     if os.path.exists(path):
         d = np.load(path)
         if len(d["stay"]) == n:
             return d["stay"], d["expert"]
-    seeds = list(range(seed0, seed0 + n)); cfg = EnvConfig()
+    seeds = list(range(seed0, seed0 + n)); cfg = cfg or EnvConfig()
     stay = returns(StayPut(), seeds, cfg)[0]
     exp = expert_returns_on(seeds, cfg, cfg, plan_kw or dict(restarts=4, rounds=4, adam_iters=80, device=device))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -48,6 +49,11 @@ def main():
     ap.add_argument("--planner", default="strong", help="reference planner budget, a key of planner_check.CONFIGS "
                                                         "(strong = the 4x4 used in v1-v4; the ladder does not converge, "
                                                         "so this choice is a reporting convention and must be stated)")
+    ap.add_argument("--n_agents", type=int, default=8)
+    ap.add_argument("--n_users", type=int, default=32)
+    ap.add_argument("--n_channels", type=int, default=3)
+    ap.add_argument("--world", type=float, default=20.0)
+    ap.add_argument("--alpha", type=float, default=2.5)
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     a = ap.parse_args()
     from planner_check import CONFIGS
@@ -56,8 +62,14 @@ def main():
     plan_kw = dict(CONFIGS[a.planner], device=a.device)
     seeds = list(range(a.seed0, a.seed0 + a.n))
     tag = a.tag or {800_000: "dev", 900_000: "test"}.get(a.seed0, str(a.seed0))
+    cfg_ref = EnvConfig(n_agents=a.n_agents, n_users=a.n_users, n_channels=a.n_channels,
+                        world=a.world, alpha=a.alpha)
+    # the default environment keeps the old cache filename, so existing reference caches stay valid
+    env_tag = ("" if (a.n_agents, a.n_users, a.n_channels, a.world, a.alpha) == (8, 32, 3, 20.0, 2.5)
+               else f"_{a.n_agents}x{a.n_users}x{a.n_channels}w{a.world:g}a{a.alpha:g}")
     stay, exp = refs(a.seed0, a.n, a.device,
-                     os.path.join(a.root, "final", f"refs_{a.seed0}_{a.n}_{a.planner}.npz"), plan_kw)
+                     os.path.join(a.root, "final", f"refs_{a.seed0}_{a.n}_{a.planner}{env_tag}.npz"),
+                     plan_kw, cfg_ref)
     print(f"reference planner '{a.planner}': {CONFIGS[a.planner]}")
     print(f"{tag} seeds {seeds[0]}..{seeds[-1]}: stay-put {stay.mean():.2f}  expert {exp.mean():.2f}  "
           f"(denominator {exp.mean() - stay.mean():.2f}; normalised scores are specific to THIS seed set)")
@@ -67,6 +79,7 @@ def main():
         norms, rets = [], []
         for p in sorted(glob.glob(os.path.join(a.root, name, "seed*", a.ckpt))):
             model, cfg = load_student(p)
+            assert_env_match(cfg_ref, cfg.__dict__, p)
             r = closed_loop(model, seeds, cfg)
             norms.append(expert_normalised(r, stay, exp)); rets.append(float(r.mean()))
         if not norms:

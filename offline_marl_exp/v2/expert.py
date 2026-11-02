@@ -124,7 +124,7 @@ def plan(seeds, cfg: EnvConfig, restarts=4, rounds=4, adam_iters=80, lr=0.08,
     h = heuristic_init(env, cfg)
     u.view(S, R, T, N, 2)[:, 0] = h
     if R > 1:
-        u.view(S, R, T, N, 2)[:, 1] = h + 0.15 * torch.randn_like(h)
+        u.view(S, R, T, N, 2)[:, 1] = h + 0.15 * torch.randn(h.shape, generator=g, dtype=h.dtype)
     ch = torch.randint(0, C, (S * R, T, N), generator=g)
     ch.view(S, R, T, N)[:, 0] = (torch.arange(N) % C).view(1, 1, N)
     trace = []
@@ -202,8 +202,16 @@ if __name__ == "__main__":
     ap.add_argument("--rounds", type=int, default=4)
     ap.add_argument("--chunk", type=int, default=100)
     ap.add_argument("--adam_iters", type=int, default=80)
+    ap.add_argument("--n_agents", type=int, default=8)
+    ap.add_argument("--n_users", type=int, default=32)
+    ap.add_argument("--n_channels", type=int, default=3)
+    ap.add_argument("--world", type=float, default=20.0)
+    ap.add_argument("--alpha", type=float, default=2.5)
     a = ap.parse_args()
-    cfg = EnvConfig()
+    cfg = EnvConfig(n_agents=a.n_agents, n_users=a.n_users, n_channels=a.n_channels,
+                    world=a.world, alpha=a.alpha)
+    print(f"environment: N={cfg.n_agents} U={cfg.n_users} C={cfg.n_channels} "
+          f"W={cfg.world:g} alpha={cfg.alpha:g}", flush=True)
     os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True)
     seeds = list(range(a.start, a.start + a.n))
     parts = []

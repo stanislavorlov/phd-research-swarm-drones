@@ -1,0 +1,18 @@
+== E6_rad seed 3  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 0, 'n_agents': 8, 'n_users': 32, 'n_channels': 6, 'world': 28.0, 'alpha': 2.5}  device=cuda  args={'k': 6.0, 'n_agents': 8, 'n_users': 32, 'n_channels': 6, 'world': 28.0, 'alpha': 2.5, 'd': 128, 'head': 'mdn', 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 0, 'no_aug': False, 'epochs0': 300, 'bs': 2048, 'lr': 0.002, 'wd': 0.0001, 'w_chunk': 0.5, 'device': 'cuda', 'seed': 3, 'train_data': 'data/expert_train_8_6_28.pt', 'val_data': 'data/expert_val_8_6_28.pt', 'plan_restarts': 4, 'plan_rounds': 4, 'plan_iters': 80, 'plan_energy': None, 'name': 'E6_rad', 'out': 'results2', 'rounds': 0, 'scen': 256, 'epochs_round': 30, 'beta0': 0.5, 'noise': 0.05, 'n_monitor': 128, 'n_final': 256, 'final': False, 'smoke': False, 'force': False}
+round-0 rows: train 96000  val 20480  (3s)
+monitor refs: stay-put 74.16  expert 142.42  (11s)
+-- round 0: BC 300 epochs
+    ep    1/300  loss   3.3076 | EMA train mse0 0.1754 acc 0.258 | val mse0 0.1724 acc 0.264 | 1s
+    ep   30/300  loss  -1.0264 | EMA train mse0 0.1194 acc 0.953 | val mse0 0.1194 acc 0.949 | 18s
+    ep   60/300  loss  -1.3247 | EMA train mse0 0.1221 acc 0.953 | val mse0 0.1214 acc 0.949 | 35s
+    ep   90/300  loss  -1.4235 | EMA train mse0 0.1210 acc 0.953 | val mse0 0.1178 acc 0.949 | 49s
+    ep  120/300  loss  -1.4581 | EMA train mse0 0.1201 acc 0.953 | val mse0 0.1185 acc 0.949 | 62s
+    ep  150/300  loss  -1.5633 | EMA train mse0 0.1188 acc 0.953 | val mse0 0.1190 acc 0.949 | 80s
+    ep  180/300  loss  -1.6135 | EMA train mse0 0.1168 acc 0.953 | val mse0 0.1187 acc 0.949 | 92s
+    ep  210/300  loss  -1.6491 | EMA train mse0 0.1157 acc 0.953 | val mse0 0.1177 acc 0.949 | 104s
+    ep  240/300  loss  -1.7795 | EMA train mse0 0.1158 acc 0.953 | val mse0 0.1184 acc 0.949 | 115s
+    ep  270/300  loss  -1.7219 | EMA train mse0 0.1154 acc 0.953 | val mse0 0.1184 acc 0.949 | 125s
+    ep  300/300  loss  -1.7231 | EMA train mse0 0.1152 acc 0.953 | val mse0 0.1184 acc 0.949 | 136s
+[round 0] closed-loop 93.65  expert-normalised 0.298  val mse0 0.1184 acc 0.949
+best round by monitor: 0  norm 0.298
+wrote results2/E6_rad/seed3/summary.json

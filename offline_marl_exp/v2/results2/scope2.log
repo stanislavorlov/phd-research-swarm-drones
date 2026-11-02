@@ -1,0 +1,293 @@
+nohup: ignoring input
++ S='--rounds 0 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300'
++ E='--train_data data/expert_train_12_4_24.pt --val_data data/expert_val_12_4_24.pt    --n_agents 12 --n_users 48 --n_channels 4 --world 24 --alpha 2.5'
++ for s in 0 1 2 3 4
++ python3 student.py --name E4_rad --k 6 --k_a -1 --bcast 0 --rounds 0 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --train_data data/expert_train_12_4_24.pt --val_data data/expert_val_12_4_24.pt --n_agents 12 --n_users 48 --n_channels 4 --world 24 --alpha 2.5 --seed 0
+== E4_rad seed 0  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 0, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5}  device=cuda  args={'k': 6.0, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5, 'd': 128, 'head': 'mdn', 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 0, 'no_aug': False, 'epochs0': 300, 'bs': 2048, 'lr': 0.002, 'wd': 0.0001, 'w_chunk': 0.5, 'device': 'cuda', 'seed': 0, 'train_data': 'data/expert_train_12_4_24.pt', 'val_data': 'data/expert_val_12_4_24.pt', 'plan_restarts': 4, 'plan_rounds': 4, 'plan_iters': 80, 'plan_energy': None, 'name': 'E4_rad', 'out': 'results2', 'rounds': 0, 'scen': 256, 'epochs_round': 30, 'beta0': 0.5, 'noise': 0.05, 'n_monitor': 128, 'n_final': 256, 'final': False, 'smoke': False, 'force': False}
+round-0 rows: train 144000  val 30720  (2s)
+monitor refs: stay-put 51.49  expert 126.08  (14s)
+-- round 0: BC 300 epochs
+    ep    1/300  loss   2.2621 | EMA train mse0 0.1585 acc 0.797 | val mse0 0.1658 acc 0.780 | 5s
+    ep   30/300  loss  -0.5136 | EMA train mse0 0.1061 acc 0.884 | val mse0 0.1119 acc 0.888 | 26s
+    ep   60/300  loss  -0.6056 | EMA train mse0 0.1013 acc 0.884 | val mse0 0.1065 acc 0.888 | 44s
+    ep   90/300  loss  -0.8103 | EMA train mse0 0.1007 acc 0.884 | val mse0 0.1060 acc 0.888 | 63s
+    ep  120/300  loss  -0.7433 | EMA train mse0 0.1006 acc 0.884 | val mse0 0.1064 acc 0.888 | 85s
+    ep  150/300  loss  -1.1862 | EMA train mse0 0.1001 acc 0.885 | val mse0 0.1070 acc 0.889 | 106s
+    ep  180/300  loss  -0.9912 | EMA train mse0 0.1000 acc 0.884 | val mse0 0.1070 acc 0.888 | 124s
+    ep  210/300  loss  -0.9417 | EMA train mse0 0.1001 acc 0.884 | val mse0 0.1074 acc 0.888 | 144s
+    ep  240/300  loss  -0.9044 | EMA train mse0 0.0998 acc 0.884 | val mse0 0.1079 acc 0.888 | 163s
+    ep  270/300  loss  -0.8648 | EMA train mse0 0.0996 acc 0.884 | val mse0 0.1082 acc 0.888 | 182s
+    ep  300/300  loss  -0.9056 | EMA train mse0 0.0999 acc 0.885 | val mse0 0.1085 acc 0.888 | 201s
+[round 0] closed-loop 71.30  expert-normalised 0.269  val mse0 0.1085 acc 0.888
+best round by monitor: 0  norm 0.269
+wrote results2/E4_rad/seed0/summary.json
++ python3 student.py --name E4_cnt --k 6 --k_a -1 --bcast 1 --rounds 0 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --train_data data/expert_train_12_4_24.pt --val_data data/expert_val_12_4_24.pt --n_agents 12 --n_users 48 --n_channels 4 --world 24 --alpha 2.5 --seed 0
+== E4_cnt seed 0  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 1, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5}  device=cuda  args={'k': 6.0, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5, 'd': 128, 'head': 'mdn', 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 1, 'no_aug': False, 'epochs0': 300, 'bs': 2048, 'lr': 0.002, 'wd': 0.0001, 'w_chunk': 0.5, 'device': 'cuda', 'seed': 0, 'train_data': 'data/expert_train_12_4_24.pt', 'val_data': 'data/expert_val_12_4_24.pt', 'plan_restarts': 4, 'plan_rounds': 4, 'plan_iters': 80, 'plan_energy': None, 'name': 'E4_cnt', 'out': 'results2', 'rounds': 0, 'scen': 256, 'epochs_round': 30, 'beta0': 0.5, 'noise': 0.05, 'n_monitor': 128, 'n_final': 256, 'final': False, 'smoke': False, 'force': False}
+round-0 rows: train 144000  val 30720  (2s)
+monitor refs: stay-put 51.49  expert 126.08  (14s)
+-- round 0: BC 300 epochs
+    ep    1/300  loss   2.2375 | EMA train mse0 0.1597 acc 0.587 | val mse0 0.1661 acc 0.624 | 3s
+    ep   30/300  loss  -0.6669 | EMA train mse0 0.0987 acc 0.890 | val mse0 0.1041 acc 0.890 | 23s
+    ep   60/300  loss  -0.6348 | EMA train mse0 0.0996 acc 0.891 | val mse0 0.1042 acc 0.892 | 41s
+    ep   90/300  loss  -0.9124 | EMA train mse0 0.0986 acc 0.891 | val mse0 0.1045 acc 0.892 | 61s
+    ep  120/300  loss  -0.8474 | EMA train mse0 0.0974 acc 0.892 | val mse0 0.1057 acc 0.893 | 79s
+    ep  150/300  loss  -1.2487 | EMA train mse0 0.0967 acc 0.892 | val mse0 0.1050 acc 0.893 | 99s
+    ep  180/300  loss  -1.0564 | EMA train mse0 0.0968 acc 0.893 | val mse0 0.1043 acc 0.893 | 118s
+    ep  210/300  loss  -1.0589 | EMA train mse0 0.0966 acc 0.893 | val mse0 0.1049 acc 0.894 | 137s
+    ep  240/300  loss  -0.9951 | EMA train mse0 0.0966 acc 0.893 | val mse0 0.1053 acc 0.895 | 155s
+    ep  270/300  loss  -0.9268 | EMA train mse0 0.0965 acc 0.893 | val mse0 0.1049 acc 0.895 | 174s
+    ep  300/300  loss  -0.9857 | EMA train mse0 0.0962 acc 0.893 | val mse0 0.1051 acc 0.895 | 197s
+[round 0] closed-loop 78.10  expert-normalised 0.360  val mse0 0.1051 acc 0.895
+best round by monitor: 0  norm 0.360
+wrote results2/E4_cnt/seed0/summary.json
++ python3 student.py --name E4_full --k inf --bcast 0 --rounds 0 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --train_data data/expert_train_12_4_24.pt --val_data data/expert_val_12_4_24.pt --n_agents 12 --n_users 48 --n_channels 4 --world 24 --alpha 2.5 --seed 0
+== E4_full seed 0  opts={'k': inf, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 0, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5}  device=cuda  args={'k': inf, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5, 'd': 128, 'head': 'mdn', 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 0, 'no_aug': False, 'epochs0': 300, 'bs': 2048, 'lr': 0.002, 'wd': 0.0001, 'w_chunk': 0.5, 'device': 'cuda', 'seed': 0, 'train_data': 'data/expert_train_12_4_24.pt', 'val_data': 'data/expert_val_12_4_24.pt', 'plan_restarts': 4, 'plan_rounds': 4, 'plan_iters': 80, 'plan_energy': None, 'name': 'E4_full', 'out': 'results2', 'rounds': 0, 'scen': 256, 'epochs_round': 30, 'beta0': 0.5, 'noise': 0.05, 'n_monitor': 128, 'n_final': 256, 'final': False, 'smoke': False, 'force': False}
+round-0 rows: train 144000  val 30720  (2s)
+monitor refs: stay-put 51.49  expert 126.08  (14s)
+-- round 0: BC 300 epochs
+    ep    1/300  loss   1.8405 | EMA train mse0 0.1481 acc 0.313 | val mse0 0.1544 acc 0.354 | 3s
+    ep   30/300  loss  -0.5792 | EMA train mse0 0.1035 acc 0.890 | val mse0 0.1040 acc 0.891 | 21s
+    ep   60/300  loss  -0.6665 | EMA train mse0 0.0913 acc 0.891 | val mse0 0.0952 acc 0.891 | 40s
+    ep   90/300  loss  -1.0207 | EMA train mse0 0.0886 acc 0.891 | val mse0 0.0932 acc 0.892 | 58s
+    ep  120/300  loss  -0.9057 | EMA train mse0 0.0881 acc 0.893 | val mse0 0.0918 acc 0.892 | 77s
+    ep  150/300  loss  -1.3720 | EMA train mse0 0.0879 acc 0.893 | val mse0 0.0917 acc 0.893 | 96s
+    ep  180/300  loss  -1.1915 | EMA train mse0 0.0860 acc 0.894 | val mse0 0.0912 acc 0.892 | 115s
+    ep  210/300  loss  -1.1482 | EMA train mse0 0.0854 acc 0.894 | val mse0 0.0903 acc 0.892 | 134s
+    ep  240/300  loss  -1.1414 | EMA train mse0 0.0851 acc 0.894 | val mse0 0.0905 acc 0.892 | 154s
+    ep  270/300  loss  -1.0460 | EMA train mse0 0.0850 acc 0.894 | val mse0 0.0912 acc 0.892 | 173s
+    ep  300/300  loss  -1.0951 | EMA train mse0 0.0854 acc 0.894 | val mse0 0.0917 acc 0.893 | 198s
+[round 0] closed-loop 86.34  expert-normalised 0.470  val mse0 0.0917 acc 0.893
+best round by monitor: 0  norm 0.470
+wrote results2/E4_full/seed0/summary.json
++ for s in 0 1 2 3 4
++ python3 student.py --name E4_rad --k 6 --k_a -1 --bcast 0 --rounds 0 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --train_data data/expert_train_12_4_24.pt --val_data data/expert_val_12_4_24.pt --n_agents 12 --n_users 48 --n_channels 4 --world 24 --alpha 2.5 --seed 1
+== E4_rad seed 1  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 0, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5}  device=cuda  args={'k': 6.0, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5, 'd': 128, 'head': 'mdn', 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 0, 'no_aug': False, 'epochs0': 300, 'bs': 2048, 'lr': 0.002, 'wd': 0.0001, 'w_chunk': 0.5, 'device': 'cuda', 'seed': 1, 'train_data': 'data/expert_train_12_4_24.pt', 'val_data': 'data/expert_val_12_4_24.pt', 'plan_restarts': 4, 'plan_rounds': 4, 'plan_iters': 80, 'plan_energy': None, 'name': 'E4_rad', 'out': 'results2', 'rounds': 0, 'scen': 256, 'epochs_round': 30, 'beta0': 0.5, 'noise': 0.05, 'n_monitor': 128, 'n_final': 256, 'final': False, 'smoke': False, 'force': False}
+round-0 rows: train 144000  val 30720  (2s)
+monitor refs: stay-put 51.49  expert 126.08  (14s)
+-- round 0: BC 300 epochs
+    ep    1/300  loss   2.3271 | EMA train mse0 0.1602 acc 0.389 | val mse0 0.1668 acc 0.423 | 3s
+    ep   30/300  loss  -0.5410 | EMA train mse0 0.1010 acc 0.880 | val mse0 0.1055 acc 0.888 | 22s
+    ep   60/300  loss  -0.7458 | EMA train mse0 0.0995 acc 0.881 | val mse0 0.1039 acc 0.889 | 41s
+    ep   90/300  loss  -0.8254 | EMA train mse0 0.0975 acc 0.881 | val mse0 0.1023 acc 0.888 | 63s
+    ep  120/300  loss  -0.7039 | EMA train mse0 0.0964 acc 0.881 | val mse0 0.1030 acc 0.888 | 82s
+    ep  150/300  loss  -0.6839 | EMA train mse0 0.0962 acc 0.881 | val mse0 0.1027 acc 0.888 | 102s
+    ep  180/300  loss  -0.8963 | EMA train mse0 0.0963 acc 0.881 | val mse0 0.1026 acc 0.888 | 121s
+    ep  210/300  loss  -1.0555 | EMA train mse0 0.0964 acc 0.881 | val mse0 0.1030 acc 0.888 | 139s
+    ep  240/300  loss  -1.0229 | EMA train mse0 0.0962 acc 0.881 | val mse0 0.1033 acc 0.888 | 158s
+    ep  270/300  loss  -1.2337 | EMA train mse0 0.0958 acc 0.881 | val mse0 0.1033 acc 0.888 | 177s
+    ep  300/300  loss  -0.9959 | EMA train mse0 0.0957 acc 0.881 | val mse0 0.1036 acc 0.888 | 198s
+[round 0] closed-loop 71.00  expert-normalised 0.268  val mse0 0.1036 acc 0.888
+best round by monitor: 0  norm 0.268
+wrote results2/E4_rad/seed1/summary.json
++ python3 student.py --name E4_cnt --k 6 --k_a -1 --bcast 1 --rounds 0 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --train_data data/expert_train_12_4_24.pt --val_data data/expert_val_12_4_24.pt --n_agents 12 --n_users 48 --n_channels 4 --world 24 --alpha 2.5 --seed 1
+== E4_cnt seed 1  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 1, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5}  device=cuda  args={'k': 6.0, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5, 'd': 128, 'head': 'mdn', 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 1, 'no_aug': False, 'epochs0': 300, 'bs': 2048, 'lr': 0.002, 'wd': 0.0001, 'w_chunk': 0.5, 'device': 'cuda', 'seed': 1, 'train_data': 'data/expert_train_12_4_24.pt', 'val_data': 'data/expert_val_12_4_24.pt', 'plan_restarts': 4, 'plan_rounds': 4, 'plan_iters': 80, 'plan_energy': None, 'name': 'E4_cnt', 'out': 'results2', 'rounds': 0, 'scen': 256, 'epochs_round': 30, 'beta0': 0.5, 'noise': 0.05, 'n_monitor': 128, 'n_final': 256, 'final': False, 'smoke': False, 'force': False}
+round-0 rows: train 144000  val 30720  (2s)
+monitor refs: stay-put 51.49  expert 126.08  (13s)
+-- round 0: BC 300 epochs
+    ep    1/300  loss   2.2256 | EMA train mse0 0.1593 acc 0.269 | val mse0 0.1653 acc 0.235 | 3s
+    ep   30/300  loss  -0.5966 | EMA train mse0 0.1029 acc 0.886 | val mse0 0.1063 acc 0.891 | 21s
+    ep   60/300  loss  -0.7821 | EMA train mse0 0.0992 acc 0.887 | val mse0 0.1059 acc 0.892 | 40s
+    ep   90/300  loss  -0.8540 | EMA train mse0 0.1012 acc 0.889 | val mse0 0.1063 acc 0.893 | 59s
+    ep  120/300  loss  -0.8221 | EMA train mse0 0.0998 acc 0.889 | val mse0 0.1063 acc 0.893 | 78s
+    ep  150/300  loss  -0.7422 | EMA train mse0 0.1005 acc 0.888 | val mse0 0.1071 acc 0.893 | 97s
+    ep  180/300  loss  -0.8996 | EMA train mse0 0.1005 acc 0.889 | val mse0 0.1071 acc 0.894 | 117s
+    ep  210/300  loss  -1.1180 | EMA train mse0 0.1012 acc 0.889 | val mse0 0.1074 acc 0.893 | 136s
+    ep  240/300  loss  -1.1181 | EMA train mse0 0.1011 acc 0.889 | val mse0 0.1083 acc 0.893 | 156s
+    ep  270/300  loss  -1.3025 | EMA train mse0 0.1013 acc 0.890 | val mse0 0.1086 acc 0.893 | 175s
+    ep  300/300  loss  -1.1233 | EMA train mse0 0.1009 acc 0.890 | val mse0 0.1087 acc 0.893 | 195s
+[round 0] closed-loop 77.62  expert-normalised 0.355  val mse0 0.1087 acc 0.893
+best round by monitor: 0  norm 0.355
+wrote results2/E4_cnt/seed1/summary.json
++ python3 student.py --name E4_full --k inf --bcast 0 --rounds 0 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --train_data data/expert_train_12_4_24.pt --val_data data/expert_val_12_4_24.pt --n_agents 12 --n_users 48 --n_channels 4 --world 24 --alpha 2.5 --seed 1
+== E4_full seed 1  opts={'k': inf, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 0, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5}  device=cuda  args={'k': inf, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5, 'd': 128, 'head': 'mdn', 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 0, 'no_aug': False, 'epochs0': 300, 'bs': 2048, 'lr': 0.002, 'wd': 0.0001, 'w_chunk': 0.5, 'device': 'cuda', 'seed': 1, 'train_data': 'data/expert_train_12_4_24.pt', 'val_data': 'data/expert_val_12_4_24.pt', 'plan_restarts': 4, 'plan_rounds': 4, 'plan_iters': 80, 'plan_energy': None, 'name': 'E4_full', 'out': 'results2', 'rounds': 0, 'scen': 256, 'epochs_round': 30, 'beta0': 0.5, 'noise': 0.05, 'n_monitor': 128, 'n_final': 256, 'final': False, 'smoke': False, 'force': False}
+round-0 rows: train 144000  val 30720  (2s)
+monitor refs: stay-put 51.49  expert 126.08  (12s)
+-- round 0: BC 300 epochs
+    ep    1/300  loss   1.8082 | EMA train mse0 0.1536 acc 0.408 | val mse0 0.1593 acc 0.394 | 3s
+    ep   30/300  loss  -0.6071 | EMA train mse0 0.0966 acc 0.885 | val mse0 0.0995 acc 0.891 | 21s
+    ep   60/300  loss  -0.8640 | EMA train mse0 0.0864 acc 0.886 | val mse0 0.0905 acc 0.892 | 40s
+    ep   90/300  loss  -0.9650 | EMA train mse0 0.0840 acc 0.887 | val mse0 0.0886 acc 0.892 | 59s
+    ep  120/300  loss  -0.8960 | EMA train mse0 0.0836 acc 0.887 | val mse0 0.0884 acc 0.892 | 78s
+    ep  150/300  loss  -0.8424 | EMA train mse0 0.0819 acc 0.887 | val mse0 0.0889 acc 0.893 | 97s
+    ep  180/300  loss  -1.0439 | EMA train mse0 0.0814 acc 0.888 | val mse0 0.0891 acc 0.892 | 115s
+    ep  210/300  loss  -1.2621 | EMA train mse0 0.0818 acc 0.889 | val mse0 0.0890 acc 0.893 | 135s
+    ep  240/300  loss  -1.2362 | EMA train mse0 0.0809 acc 0.889 | val mse0 0.0890 acc 0.893 | 154s
+    ep  270/300  loss  -1.4595 | EMA train mse0 0.0806 acc 0.889 | val mse0 0.0894 acc 0.893 | 174s
+    ep  300/300  loss  -1.2423 | EMA train mse0 0.0805 acc 0.889 | val mse0 0.0894 acc 0.893 | 194s
+[round 0] closed-loop 87.33  expert-normalised 0.483  val mse0 0.0894 acc 0.893
+best round by monitor: 0  norm 0.483
+wrote results2/E4_full/seed1/summary.json
++ for s in 0 1 2 3 4
++ python3 student.py --name E4_rad --k 6 --k_a -1 --bcast 0 --rounds 0 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --train_data data/expert_train_12_4_24.pt --val_data data/expert_val_12_4_24.pt --n_agents 12 --n_users 48 --n_channels 4 --world 24 --alpha 2.5 --seed 2
+== E4_rad seed 2  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 0, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5}  device=cuda  args={'k': 6.0, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5, 'd': 128, 'head': 'mdn', 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 0, 'no_aug': False, 'epochs0': 300, 'bs': 2048, 'lr': 0.002, 'wd': 0.0001, 'w_chunk': 0.5, 'device': 'cuda', 'seed': 2, 'train_data': 'data/expert_train_12_4_24.pt', 'val_data': 'data/expert_val_12_4_24.pt', 'plan_restarts': 4, 'plan_rounds': 4, 'plan_iters': 80, 'plan_energy': None, 'name': 'E4_rad', 'out': 'results2', 'rounds': 0, 'scen': 256, 'epochs_round': 30, 'beta0': 0.5, 'noise': 0.05, 'n_monitor': 128, 'n_final': 256, 'final': False, 'smoke': False, 'force': False}
+round-0 rows: train 144000  val 30720  (2s)
+monitor refs: stay-put 51.49  expert 126.08  (10s)
+-- round 0: BC 300 epochs
+    ep    1/300  loss   2.4952 | EMA train mse0 0.1633 acc 0.296 | val mse0 0.1658 acc 0.267 | 1s
+    ep   30/300  loss  -0.6699 | EMA train mse0 0.1073 acc 0.885 | val mse0 0.1093 acc 0.888 | 22s
+    ep   60/300  loss  -0.7068 | EMA train mse0 0.1007 acc 0.885 | val mse0 0.1058 acc 0.888 | 42s
+    ep   90/300  loss  -0.9786 | EMA train mse0 0.1001 acc 0.885 | val mse0 0.1065 acc 0.889 | 60s
+    ep  120/300  loss  -0.9332 | EMA train mse0 0.0994 acc 0.885 | val mse0 0.1056 acc 0.889 | 79s
+    ep  150/300  loss  -0.8312 | EMA train mse0 0.0994 acc 0.885 | val mse0 0.1064 acc 0.888 | 98s
+    ep  180/300  loss  -1.0308 | EMA train mse0 0.0989 acc 0.885 | val mse0 0.1063 acc 0.888 | 116s
+    ep  210/300  loss  -1.0194 | EMA train mse0 0.0985 acc 0.885 | val mse0 0.1066 acc 0.888 | 135s
+    ep  240/300  loss  -0.8981 | EMA train mse0 0.0988 acc 0.885 | val mse0 0.1061 acc 0.888 | 153s
+    ep  270/300  loss  -1.0011 | EMA train mse0 0.0985 acc 0.885 | val mse0 0.1064 acc 0.888 | 172s
+    ep  300/300  loss  -1.1057 | EMA train mse0 0.0987 acc 0.885 | val mse0 0.1067 acc 0.888 | 191s
+[round 0] closed-loop 72.12  expert-normalised 0.281  val mse0 0.1067 acc 0.888
+best round by monitor: 0  norm 0.281
+wrote results2/E4_rad/seed2/summary.json
++ python3 student.py --name E4_cnt --k 6 --k_a -1 --bcast 1 --rounds 0 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --train_data data/expert_train_12_4_24.pt --val_data data/expert_val_12_4_24.pt --n_agents 12 --n_users 48 --n_channels 4 --world 24 --alpha 2.5 --seed 2
+== E4_cnt seed 2  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 1, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5}  device=cuda  args={'k': 6.0, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5, 'd': 128, 'head': 'mdn', 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 1, 'no_aug': False, 'epochs0': 300, 'bs': 2048, 'lr': 0.002, 'wd': 0.0001, 'w_chunk': 0.5, 'device': 'cuda', 'seed': 2, 'train_data': 'data/expert_train_12_4_24.pt', 'val_data': 'data/expert_val_12_4_24.pt', 'plan_restarts': 4, 'plan_rounds': 4, 'plan_iters': 80, 'plan_energy': None, 'name': 'E4_cnt', 'out': 'results2', 'rounds': 0, 'scen': 256, 'epochs_round': 30, 'beta0': 0.5, 'noise': 0.05, 'n_monitor': 128, 'n_final': 256, 'final': False, 'smoke': False, 'force': False}
+round-0 rows: train 144000  val 30720  (2s)
+monitor refs: stay-put 51.49  expert 126.08  (11s)
+-- round 0: BC 300 epochs
+    ep    1/300  loss   2.5579 | EMA train mse0 0.1682 acc 0.454 | val mse0 0.1702 acc 0.472 | 1s
+    ep   30/300  loss  -0.6909 | EMA train mse0 0.1064 acc 0.888 | val mse0 0.1100 acc 0.891 | 20s
+    ep   60/300  loss  -0.8743 | EMA train mse0 0.1034 acc 0.889 | val mse0 0.1071 acc 0.892 | 39s
+    ep   90/300  loss  -1.0567 | EMA train mse0 0.1021 acc 0.890 | val mse0 0.1050 acc 0.893 | 58s
+    ep  120/300  loss  -0.9273 | EMA train mse0 0.1020 acc 0.890 | val mse0 0.1052 acc 0.894 | 77s
+    ep  150/300  loss  -0.8892 | EMA train mse0 0.1008 acc 0.889 | val mse0 0.1060 acc 0.893 | 95s
+    ep  180/300  loss  -1.0284 | EMA train mse0 0.1003 acc 0.889 | val mse0 0.1061 acc 0.894 | 114s
+    ep  210/300  loss  -1.1096 | EMA train mse0 0.0999 acc 0.890 | val mse0 0.1062 acc 0.893 | 135s
+    ep  240/300  loss  -0.9651 | EMA train mse0 0.0993 acc 0.890 | val mse0 0.1063 acc 0.893 | 156s
+    ep  270/300  loss  -1.0792 | EMA train mse0 0.0995 acc 0.890 | val mse0 0.1066 acc 0.893 | 176s
+    ep  300/300  loss  -1.1978 | EMA train mse0 0.0995 acc 0.890 | val mse0 0.1063 acc 0.893 | 196s
+[round 0] closed-loop 80.96  expert-normalised 0.386  val mse0 0.1063 acc 0.893
+best round by monitor: 0  norm 0.386
+wrote results2/E4_cnt/seed2/summary.json
++ python3 student.py --name E4_full --k inf --bcast 0 --rounds 0 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --train_data data/expert_train_12_4_24.pt --val_data data/expert_val_12_4_24.pt --n_agents 12 --n_users 48 --n_channels 4 --world 24 --alpha 2.5 --seed 2
+== E4_full seed 2  opts={'k': inf, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 0, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5}  device=cuda  args={'k': inf, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5, 'd': 128, 'head': 'mdn', 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 0, 'no_aug': False, 'epochs0': 300, 'bs': 2048, 'lr': 0.002, 'wd': 0.0001, 'w_chunk': 0.5, 'device': 'cuda', 'seed': 2, 'train_data': 'data/expert_train_12_4_24.pt', 'val_data': 'data/expert_val_12_4_24.pt', 'plan_restarts': 4, 'plan_rounds': 4, 'plan_iters': 80, 'plan_energy': None, 'name': 'E4_full', 'out': 'results2', 'rounds': 0, 'scen': 256, 'epochs_round': 30, 'beta0': 0.5, 'noise': 0.05, 'n_monitor': 128, 'n_final': 256, 'final': False, 'smoke': False, 'force': False}
+round-0 rows: train 144000  val 30720  (3s)
+monitor refs: stay-put 51.49  expert 126.08  (10s)
+-- round 0: BC 300 epochs
+    ep    1/300  loss   2.2085 | EMA train mse0 0.1571 acc 0.336 | val mse0 0.1597 acc 0.324 | 1s
+    ep   30/300  loss  -0.7151 | EMA train mse0 0.0967 acc 0.889 | val mse0 0.0999 acc 0.891 | 22s
+    ep   60/300  loss  -0.8266 | EMA train mse0 0.0897 acc 0.890 | val mse0 0.0907 acc 0.892 | 42s
+    ep   90/300  loss  -1.0768 | EMA train mse0 0.0868 acc 0.891 | val mse0 0.0892 acc 0.893 | 61s
+    ep  120/300  loss  -1.0747 | EMA train mse0 0.0857 acc 0.892 | val mse0 0.0892 acc 0.893 | 80s
+    ep  150/300  loss  -0.9369 | EMA train mse0 0.0842 acc 0.891 | val mse0 0.0884 acc 0.893 | 98s
+    ep  180/300  loss  -1.1164 | EMA train mse0 0.0835 acc 0.892 | val mse0 0.0879 acc 0.893 | 117s
+    ep  210/300  loss  -1.2874 | EMA train mse0 0.0828 acc 0.892 | val mse0 0.0878 acc 0.893 | 135s
+    ep  240/300  loss  -1.0915 | EMA train mse0 0.0824 acc 0.892 | val mse0 0.0876 acc 0.893 | 155s
+    ep  270/300  loss  -1.2054 | EMA train mse0 0.0822 acc 0.892 | val mse0 0.0882 acc 0.892 | 175s
+    ep  300/300  loss  -1.3173 | EMA train mse0 0.0821 acc 0.893 | val mse0 0.0884 acc 0.892 | 195s
+[round 0] closed-loop 87.26  expert-normalised 0.483  val mse0 0.0884 acc 0.892
+best round by monitor: 0  norm 0.483
+wrote results2/E4_full/seed2/summary.json
++ for s in 0 1 2 3 4
++ python3 student.py --name E4_rad --k 6 --k_a -1 --bcast 0 --rounds 0 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --train_data data/expert_train_12_4_24.pt --val_data data/expert_val_12_4_24.pt --n_agents 12 --n_users 48 --n_channels 4 --world 24 --alpha 2.5 --seed 3
+== E4_rad seed 3  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 0, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5}  device=cuda  args={'k': 6.0, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5, 'd': 128, 'head': 'mdn', 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 0, 'no_aug': False, 'epochs0': 300, 'bs': 2048, 'lr': 0.002, 'wd': 0.0001, 'w_chunk': 0.5, 'device': 'cuda', 'seed': 3, 'train_data': 'data/expert_train_12_4_24.pt', 'val_data': 'data/expert_val_12_4_24.pt', 'plan_restarts': 4, 'plan_rounds': 4, 'plan_iters': 80, 'plan_energy': None, 'name': 'E4_rad', 'out': 'results2', 'rounds': 0, 'scen': 256, 'epochs_round': 30, 'beta0': 0.5, 'noise': 0.05, 'n_monitor': 128, 'n_final': 256, 'final': False, 'smoke': False, 'force': False}
+round-0 rows: train 144000  val 30720  (2s)
+monitor refs: stay-put 51.49  expert 126.08  (11s)
+-- round 0: BC 300 epochs
+    ep    1/300  loss   2.2895 | EMA train mse0 0.1619 acc 0.297 | val mse0 0.1656 acc 0.300 | 1s
+    ep   30/300  loss  -0.5236 | EMA train mse0 0.1040 acc 0.884 | val mse0 0.1108 acc 0.888 | 20s
+    ep   60/300  loss  -0.7955 | EMA train mse0 0.1034 acc 0.883 | val mse0 0.1090 acc 0.888 | 39s
+    ep   90/300  loss  -0.8501 | EMA train mse0 0.1025 acc 0.884 | val mse0 0.1096 acc 0.888 | 57s
+    ep  120/300  loss  -0.8725 | EMA train mse0 0.1025 acc 0.884 | val mse0 0.1091 acc 0.889 | 76s
+    ep  150/300  loss  -0.8941 | EMA train mse0 0.1021 acc 0.884 | val mse0 0.1091 acc 0.888 | 95s
+    ep  180/300  loss  -0.9144 | EMA train mse0 0.1023 acc 0.884 | val mse0 0.1092 acc 0.888 | 114s
+    ep  210/300  loss  -1.0394 | EMA train mse0 0.1015 acc 0.884 | val mse0 0.1084 acc 0.888 | 133s
+    ep  240/300  loss  -1.0823 | EMA train mse0 0.1007 acc 0.884 | val mse0 0.1088 acc 0.888 | 153s
+    ep  270/300  loss  -0.9717 | EMA train mse0 0.0998 acc 0.884 | val mse0 0.1091 acc 0.888 | 172s
+    ep  300/300  loss  -0.8396 | EMA train mse0 0.1001 acc 0.884 | val mse0 0.1091 acc 0.888 | 192s
+[round 0] closed-loop 71.84  expert-normalised 0.282  val mse0 0.1091 acc 0.888
+best round by monitor: 0  norm 0.282
+wrote results2/E4_rad/seed3/summary.json
++ python3 student.py --name E4_cnt --k 6 --k_a -1 --bcast 1 --rounds 0 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --train_data data/expert_train_12_4_24.pt --val_data data/expert_val_12_4_24.pt --n_agents 12 --n_users 48 --n_channels 4 --world 24 --alpha 2.5 --seed 3
+== E4_cnt seed 3  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 1, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5}  device=cuda  args={'k': 6.0, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5, 'd': 128, 'head': 'mdn', 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 1, 'no_aug': False, 'epochs0': 300, 'bs': 2048, 'lr': 0.002, 'wd': 0.0001, 'w_chunk': 0.5, 'device': 'cuda', 'seed': 3, 'train_data': 'data/expert_train_12_4_24.pt', 'val_data': 'data/expert_val_12_4_24.pt', 'plan_restarts': 4, 'plan_rounds': 4, 'plan_iters': 80, 'plan_energy': None, 'name': 'E4_cnt', 'out': 'results2', 'rounds': 0, 'scen': 256, 'epochs_round': 30, 'beta0': 0.5, 'noise': 0.05, 'n_monitor': 128, 'n_final': 256, 'final': False, 'smoke': False, 'force': False}
+round-0 rows: train 144000  val 30720  (2s)
+monitor refs: stay-put 51.49  expert 126.08  (10s)
+-- round 0: BC 300 epochs
+    ep    1/300  loss   2.4582 | EMA train mse0 0.1647 acc 0.328 | val mse0 0.1680 acc 0.275 | 1s
+    ep   30/300  loss  -0.5872 | EMA train mse0 0.1062 acc 0.887 | val mse0 0.1121 acc 0.892 | 21s
+    ep   60/300  loss  -0.8365 | EMA train mse0 0.1002 acc 0.889 | val mse0 0.1087 acc 0.893 | 42s
+    ep   90/300  loss  -0.9159 | EMA train mse0 0.1011 acc 0.891 | val mse0 0.1094 acc 0.893 | 61s
+    ep  120/300  loss  -0.8908 | EMA train mse0 0.0989 acc 0.891 | val mse0 0.1081 acc 0.893 | 80s
+    ep  150/300  loss  -1.0205 | EMA train mse0 0.0986 acc 0.891 | val mse0 0.1071 acc 0.893 | 100s
+    ep  180/300  loss  -0.8996 | EMA train mse0 0.0978 acc 0.891 | val mse0 0.1064 acc 0.892 | 119s
+    ep  210/300  loss  -1.0897 | EMA train mse0 0.0977 acc 0.892 | val mse0 0.1068 acc 0.893 | 139s
+    ep  240/300  loss  -1.1869 | EMA train mse0 0.0972 acc 0.892 | val mse0 0.1068 acc 0.893 | 159s
+    ep  270/300  loss  -1.0127 | EMA train mse0 0.0969 acc 0.892 | val mse0 0.1072 acc 0.892 | 179s
+    ep  300/300  loss  -0.8937 | EMA train mse0 0.0969 acc 0.892 | val mse0 0.1073 acc 0.893 | 198s
+[round 0] closed-loop 79.74  expert-normalised 0.380  val mse0 0.1073 acc 0.893
+best round by monitor: 0  norm 0.380
+wrote results2/E4_cnt/seed3/summary.json
++ python3 student.py --name E4_full --k inf --bcast 0 --rounds 0 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --train_data data/expert_train_12_4_24.pt --val_data data/expert_val_12_4_24.pt --n_agents 12 --n_users 48 --n_channels 4 --world 24 --alpha 2.5 --seed 3
+== E4_full seed 3  opts={'k': inf, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 0, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5}  device=cuda  args={'k': inf, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5, 'd': 128, 'head': 'mdn', 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 0, 'no_aug': False, 'epochs0': 300, 'bs': 2048, 'lr': 0.002, 'wd': 0.0001, 'w_chunk': 0.5, 'device': 'cuda', 'seed': 3, 'train_data': 'data/expert_train_12_4_24.pt', 'val_data': 'data/expert_val_12_4_24.pt', 'plan_restarts': 4, 'plan_rounds': 4, 'plan_iters': 80, 'plan_energy': None, 'name': 'E4_full', 'out': 'results2', 'rounds': 0, 'scen': 256, 'epochs_round': 30, 'beta0': 0.5, 'noise': 0.05, 'n_monitor': 128, 'n_final': 256, 'final': False, 'smoke': False, 'force': False}
+round-0 rows: train 144000  val 30720  (2s)
+monitor refs: stay-put 51.49  expert 126.08  (10s)
+-- round 0: BC 300 epochs
+    ep    1/300  loss   2.0543 | EMA train mse0 0.1544 acc 0.304 | val mse0 0.1582 acc 0.309 | 1s
+    ep   30/300  loss  -0.5677 | EMA train mse0 0.1019 acc 0.887 | val mse0 0.1022 acc 0.892 | 20s
+    ep   60/300  loss  -0.8993 | EMA train mse0 0.0909 acc 0.889 | val mse0 0.0938 acc 0.892 | 39s
+    ep   90/300  loss  -1.0188 | EMA train mse0 0.0887 acc 0.888 | val mse0 0.0922 acc 0.893 | 58s
+    ep  120/300  loss  -0.9726 | EMA train mse0 0.0865 acc 0.888 | val mse0 0.0905 acc 0.892 | 77s
+    ep  150/300  loss  -1.0889 | EMA train mse0 0.0851 acc 0.889 | val mse0 0.0902 acc 0.893 | 95s
+    ep  180/300  loss  -1.0451 | EMA train mse0 0.0845 acc 0.890 | val mse0 0.0891 acc 0.893 | 114s
+    ep  210/300  loss  -1.2513 | EMA train mse0 0.0839 acc 0.891 | val mse0 0.0893 acc 0.893 | 133s
+    ep  240/300  loss  -1.2742 | EMA train mse0 0.0830 acc 0.891 | val mse0 0.0893 acc 0.893 | 152s
+    ep  270/300  loss  -1.2033 | EMA train mse0 0.0827 acc 0.891 | val mse0 0.0889 acc 0.893 | 170s
+    ep  300/300  loss  -1.0220 | EMA train mse0 0.0828 acc 0.891 | val mse0 0.0887 acc 0.893 | 189s
+[round 0] closed-loop 83.92  expert-normalised 0.440  val mse0 0.0887 acc 0.893
+best round by monitor: 0  norm 0.440
+wrote results2/E4_full/seed3/summary.json
++ for s in 0 1 2 3 4
++ python3 student.py --name E4_rad --k 6 --k_a -1 --bcast 0 --rounds 0 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --train_data data/expert_train_12_4_24.pt --val_data data/expert_val_12_4_24.pt --n_agents 12 --n_users 48 --n_channels 4 --world 24 --alpha 2.5 --seed 4
+== E4_rad seed 4  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 0, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5}  device=cuda  args={'k': 6.0, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5, 'd': 128, 'head': 'mdn', 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 0, 'no_aug': False, 'epochs0': 300, 'bs': 2048, 'lr': 0.002, 'wd': 0.0001, 'w_chunk': 0.5, 'device': 'cuda', 'seed': 4, 'train_data': 'data/expert_train_12_4_24.pt', 'val_data': 'data/expert_val_12_4_24.pt', 'plan_restarts': 4, 'plan_rounds': 4, 'plan_iters': 80, 'plan_energy': None, 'name': 'E4_rad', 'out': 'results2', 'rounds': 0, 'scen': 256, 'epochs_round': 30, 'beta0': 0.5, 'noise': 0.05, 'n_monitor': 128, 'n_final': 256, 'final': False, 'smoke': False, 'force': False}
+round-0 rows: train 144000  val 30720  (2s)
+monitor refs: stay-put 51.49  expert 126.08  (11s)
+-- round 0: BC 300 epochs
+    ep    1/300  loss   2.3927 | EMA train mse0 0.1616 acc 0.544 | val mse0 0.1657 acc 0.563 | 1s
+    ep   30/300  loss  -0.6171 | EMA train mse0 0.1061 acc 0.884 | val mse0 0.1100 acc 0.888 | 20s
+    ep   60/300  loss  -0.7566 | EMA train mse0 0.1040 acc 0.884 | val mse0 0.1087 acc 0.888 | 39s
+    ep   90/300  loss  -0.9457 | EMA train mse0 0.1016 acc 0.884 | val mse0 0.1073 acc 0.888 | 59s
+    ep  120/300  loss  -0.8253 | EMA train mse0 0.0990 acc 0.884 | val mse0 0.1066 acc 0.888 | 79s
+    ep  150/300  loss  -0.9505 | EMA train mse0 0.0992 acc 0.885 | val mse0 0.1058 acc 0.888 | 98s
+    ep  180/300  loss  -0.9780 | EMA train mse0 0.0990 acc 0.885 | val mse0 0.1051 acc 0.888 | 117s
+    ep  210/300  loss  -0.9014 | EMA train mse0 0.0986 acc 0.885 | val mse0 0.1045 acc 0.888 | 137s
+    ep  240/300  loss  -1.1151 | EMA train mse0 0.0988 acc 0.885 | val mse0 0.1051 acc 0.888 | 156s
+    ep  270/300  loss  -1.2508 | EMA train mse0 0.0987 acc 0.885 | val mse0 0.1056 acc 0.888 | 175s
+    ep  300/300  loss  -0.9751 | EMA train mse0 0.0989 acc 0.885 | val mse0 0.1053 acc 0.888 | 194s
+[round 0] closed-loop 68.93  expert-normalised 0.244  val mse0 0.1053 acc 0.888
+best round by monitor: 0  norm 0.244
+wrote results2/E4_rad/seed4/summary.json
++ python3 student.py --name E4_cnt --k 6 --k_a -1 --bcast 1 --rounds 0 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --train_data data/expert_train_12_4_24.pt --val_data data/expert_val_12_4_24.pt --n_agents 12 --n_users 48 --n_channels 4 --world 24 --alpha 2.5 --seed 4
+== E4_cnt seed 4  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 1, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5}  device=cuda  args={'k': 6.0, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5, 'd': 128, 'head': 'mdn', 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 1, 'no_aug': False, 'epochs0': 300, 'bs': 2048, 'lr': 0.002, 'wd': 0.0001, 'w_chunk': 0.5, 'device': 'cuda', 'seed': 4, 'train_data': 'data/expert_train_12_4_24.pt', 'val_data': 'data/expert_val_12_4_24.pt', 'plan_restarts': 4, 'plan_rounds': 4, 'plan_iters': 80, 'plan_energy': None, 'name': 'E4_cnt', 'out': 'results2', 'rounds': 0, 'scen': 256, 'epochs_round': 30, 'beta0': 0.5, 'noise': 0.05, 'n_monitor': 128, 'n_final': 256, 'final': False, 'smoke': False, 'force': False}
+round-0 rows: train 144000  val 30720  (2s)
+monitor refs: stay-put 51.49  expert 126.08  (10s)
+-- round 0: BC 300 epochs
+    ep    1/300  loss   2.3339 | EMA train mse0 0.1624 acc 0.689 | val mse0 0.1662 acc 0.687 | 1s
+    ep   30/300  loss  -0.6816 | EMA train mse0 0.1056 acc 0.889 | val mse0 0.1096 acc 0.891 | 20s
+    ep   60/300  loss  -0.7608 | EMA train mse0 0.1013 acc 0.891 | val mse0 0.1062 acc 0.892 | 39s
+    ep   90/300  loss  -1.0041 | EMA train mse0 0.0994 acc 0.891 | val mse0 0.1043 acc 0.892 | 59s
+    ep  120/300  loss  -0.9000 | EMA train mse0 0.0987 acc 0.893 | val mse0 0.1030 acc 0.892 | 77s
+    ep  150/300  loss  -0.9480 | EMA train mse0 0.0972 acc 0.893 | val mse0 0.1026 acc 0.893 | 96s
+    ep  180/300  loss  -1.0741 | EMA train mse0 0.0966 acc 0.893 | val mse0 0.1024 acc 0.893 | 114s
+    ep  210/300  loss  -0.9662 | EMA train mse0 0.0968 acc 0.893 | val mse0 0.1023 acc 0.893 | 133s
+    ep  240/300  loss  -1.1910 | EMA train mse0 0.0953 acc 0.893 | val mse0 0.1025 acc 0.893 | 152s
+    ep  270/300  loss  -1.3613 | EMA train mse0 0.0952 acc 0.894 | val mse0 0.1025 acc 0.892 | 171s
+    ep  300/300  loss  -1.0377 | EMA train mse0 0.0953 acc 0.894 | val mse0 0.1025 acc 0.892 | 190s
+[round 0] closed-loop 83.07  expert-normalised 0.411  val mse0 0.1025 acc 0.892
+best round by monitor: 0  norm 0.411
+wrote results2/E4_cnt/seed4/summary.json
++ python3 student.py --name E4_full --k inf --bcast 0 --rounds 0 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --train_data data/expert_train_12_4_24.pt --val_data data/expert_val_12_4_24.pt --n_agents 12 --n_users 48 --n_channels 4 --world 24 --alpha 2.5 --seed 4
+== E4_full seed 4  opts={'k': inf, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 0, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5}  device=cuda  args={'k': inf, 'n_agents': 12, 'n_users': 48, 'n_channels': 4, 'world': 24.0, 'alpha': 2.5, 'd': 128, 'head': 'mdn', 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 0, 'no_aug': False, 'epochs0': 300, 'bs': 2048, 'lr': 0.002, 'wd': 0.0001, 'w_chunk': 0.5, 'device': 'cuda', 'seed': 4, 'train_data': 'data/expert_train_12_4_24.pt', 'val_data': 'data/expert_val_12_4_24.pt', 'plan_restarts': 4, 'plan_rounds': 4, 'plan_iters': 80, 'plan_energy': None, 'name': 'E4_full', 'out': 'results2', 'rounds': 0, 'scen': 256, 'epochs_round': 30, 'beta0': 0.5, 'noise': 0.05, 'n_monitor': 128, 'n_final': 256, 'final': False, 'smoke': False, 'force': False}
+round-0 rows: train 144000  val 30720  (3s)
+monitor refs: stay-put 51.49  expert 126.08  (10s)
+-- round 0: BC 300 epochs
+    ep    1/300  loss   1.9597 | EMA train mse0 0.1533 acc 0.392 | val mse0 0.1569 acc 0.386 | 2s
+    ep   30/300  loss  -0.6968 | EMA train mse0 0.1032 acc 0.889 | val mse0 0.1047 acc 0.891 | 21s
+    ep   60/300  loss  -0.9003 | EMA train mse0 0.0887 acc 0.891 | val mse0 0.0917 acc 0.892 | 41s
+    ep   90/300  loss  -1.0568 | EMA train mse0 0.0858 acc 0.891 | val mse0 0.0892 acc 0.893 | 60s
+    ep  120/300  loss  -0.9503 | EMA train mse0 0.0861 acc 0.891 | val mse0 0.0886 acc 0.893 | 80s
+    ep  150/300  loss  -1.0993 | EMA train mse0 0.0855 acc 0.892 | val mse0 0.0883 acc 0.893 | 99s
+    ep  180/300  loss  -1.1521 | EMA train mse0 0.0852 acc 0.891 | val mse0 0.0893 acc 0.893 | 118s
+    ep  210/300  loss  -1.1011 | EMA train mse0 0.0848 acc 0.891 | val mse0 0.0896 acc 0.893 | 137s
+    ep  240/300  loss  -1.3382 | EMA train mse0 0.0848 acc 0.892 | val mse0 0.0899 acc 0.893 | 157s
+    ep  270/300  loss  -1.5402 | EMA train mse0 0.0850 acc 0.892 | val mse0 0.0905 acc 0.893 | 175s
+    ep  300/300  loss  -1.1584 | EMA train mse0 0.0849 acc 0.892 | val mse0 0.0902 acc 0.892 | 194s
+[round 0] closed-loop 85.11  expert-normalised 0.449  val mse0 0.0902 acc 0.892
+best round by monitor: 0  norm 0.449
+wrote results2/E4_full/seed4/summary.json

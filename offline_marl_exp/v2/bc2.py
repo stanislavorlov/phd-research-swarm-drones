@@ -181,6 +181,11 @@ def expert_returns_on(seeds, cfg: EnvConfig, cfg_plan: EnvConfig, plan_kw, chunk
 # ----------------------------------------------------------------------------- student construction / io
 def add_student_args(ap):
     ap.add_argument("--k", type=float, default=6.0)
+    ap.add_argument("--n_agents", type=int, default=8)
+    ap.add_argument("--n_users", type=int, default=32)
+    ap.add_argument("--n_channels", type=int, default=3)
+    ap.add_argument("--world", type=float, default=20.0)
+    ap.add_argument("--alpha", type=float, default=2.5)
     ap.add_argument("--d", type=int, default=128)
     ap.add_argument("--head", choices=["mse", "mdn"], default="mse")
     ap.add_argument("--mdn_k", type=int, default=5)
@@ -210,12 +215,36 @@ def add_student_args(ap):
 
 def student_opts(a):
     return dict(k=a.k, d=a.d, mdn_k=(a.mdn_k if a.head == "mdn" else 0), chunk=a.chunk, obs_extra=bool(a.obs_extra),
-                k_a=a.k_a, bcast=a.bcast)
+                k_a=a.k_a, bcast=a.bcast,
+                n_agents=a.n_agents, n_users=a.n_users, n_channels=a.n_channels, world=a.world, alpha=a.alpha)
 
 
 def cfg_from_opts(opts) -> EnvConfig:
-    """Env config matching a student's observation layout (old checkpoints lack k_a / bcast: defaults apply)."""
-    return EnvConfig(k=opts["k"], obs_extra=opts["obs_extra"], k_a=opts.get("k_a", -1.0), bcast=opts.get("bcast", 0))
+    """Env config matching a student's observation layout. Old checkpoints lack k_a / bcast and the environment
+    size; the defaults below are the values those runs were produced with, so they reproduce exactly."""
+    return EnvConfig(k=opts["k"], obs_extra=opts["obs_extra"], k_a=opts.get("k_a", -1.0), bcast=opts.get("bcast", 0),
+                     n_agents=opts.get("n_agents", 8), n_users=opts.get("n_users", 32),
+                     n_channels=opts.get("n_channels", 3), world=opts.get("world", 20.0),
+                     alpha=opts.get("alpha", 2.5))
+
+ENV_KEYS = ("n_agents", "n_users", "n_channels", "world", "alpha", "T", "H", "noise", "energy", "vmax")
+
+
+def assert_env_match(cfg, other, where=""):
+    """Fail loudly when a dataset or checkpoint was produced under a different environment.
+
+    `other` is an EnvConfig.__dict__ (expert.py stores one in every dataset) or None for artefacts that predate
+    the environment-size flags, which are the default environment by construction. Observation options (k, k_a,
+    bcast) are deliberately excluded: those differ between arms on purpose."""
+    ref = {k: getattr(cfg, k) for k in ENV_KEYS}
+    if other is None:
+        other = {k: getattr(EnvConfig(), k) for k in ENV_KEYS}
+    bad = {k: (ref[k], other[k]) for k in ENV_KEYS if k in other and ref[k] != other[k]}
+    if bad:
+        raise SystemExit("environment mismatch" + (f" for {where}" if where else "") + ": "
+                         + ", ".join(f"{k}: this run has {v[0]}, the artefact has {v[1]}"
+                                     for k, v in sorted(bad.items())))
+
 
 
 def make_student(opts) -> StudentActor:
