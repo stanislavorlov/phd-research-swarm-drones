@@ -1,0 +1,15 @@
+== M_mix seed 0  MADT d=128 layers=3 heads=4 epochs=25 bs=48 lr=0.001  opts={'k': 6.0, 'd': 128, 'mdn_k': 0, 'chunk': 1, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6, 'n_agents': 8, 'n_users': 32, 'n_channels': 3, 'world': 20.0, 'alpha': 2.5}
+/Users/stanislavorlov/PycharmProjects/phd-research-swarm-drones/offline_marl_exp/v2/madt.py:35: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.tf = nn.TransformerEncoder(layer, layers)
+loaded results2/M_mix/seed0/best.pt  target=120.0
+[final] seeds 900000..901023 (n=1024, strong++): return 69.09  norm 0.260  outage 0.1744  (stay 50.56, den 71.17)
+== M_mix seed 1  MADT d=128 layers=3 heads=4 epochs=25 bs=48 lr=0.001  opts={'k': 6.0, 'd': 128, 'mdn_k': 0, 'chunk': 1, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6, 'n_agents': 8, 'n_users': 32, 'n_channels': 3, 'world': 20.0, 'alpha': 2.5}
+/Users/stanislavorlov/PycharmProjects/phd-research-swarm-drones/offline_marl_exp/v2/madt.py:35: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.tf = nn.TransformerEncoder(layer, layers)
+loaded results2/M_mix/seed1/best.pt  target=120.0
+[final] seeds 900000..901023 (n=1024, strong++): return 68.70  norm 0.255  outage 0.1339  (stay 50.56, den 71.17)
+== M_mix seed 2  MADT d=128 layers=3 heads=4 epochs=25 bs=48 lr=0.001  opts={'k': 6.0, 'd': 128, 'mdn_k': 0, 'chunk': 1, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6, 'n_agents': 8, 'n_users': 32, 'n_channels': 3, 'world': 20.0, 'alpha': 2.5}
+/Users/stanislavorlov/PycharmProjects/phd-research-swarm-drones/offline_marl_exp/v2/madt.py:35: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.tf = nn.TransformerEncoder(layer, layers)
+loaded results2/M_mix/seed2/best.pt  target=100.0
+[final] seeds 900000..901023 (n=1024, strong++): return 65.46  norm 0.209  outage 0.1022  (stay 50.56, den 71.17)
