@@ -1,0 +1,31 @@
+{
+ "name": "SMOKE_M",
+ "seed": 0,
+ "opts": {
+  "k": 6.0,
+  "d": 128,
+  "mdn_k": 0,
+  "chunk": 1,
+  "obs_extra": false,
+  "k_a": -1.0,
+  "bcast": 6,
+  "n_agents": 8,
+  "n_users": 32,
+  "n_channels": 3,
+  "world": 20.0,
+  "alpha": 2.5
+ },
+ "monitor_return_best": 19.867511749267578,
+ "madt": {
+  "target": 120,
+  "targets": [
+   120
+  ],
+  "d": 128,
+  "layers": 3,
+  "heads": 4,
+  "epochs": 2,
+  "bs": 48,
+  "lr": 0.001
+ }
+}

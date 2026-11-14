@@ -1,0 +1,34 @@
+{
+ "name": "M_mix",
+ "seed": 1,
+ "opts": {
+  "k": 6.0,
+  "d": 128,
+  "mdn_k": 0,
+  "chunk": 1,
+  "obs_extra": false,
+  "k_a": -1.0,
+  "bcast": 6,
+  "n_agents": 8,
+  "n_users": 32,
+  "n_channels": 3,
+  "world": 20.0,
+  "alpha": 2.5
+ },
+ "monitor_return_best": 68.41267395019531,
+ "madt": {
+  "target": 120.0,
+  "targets": [
+   100.0,
+   120.0,
+   140.0,
+   160.0
+  ],
+  "d": 128,
+  "layers": 3,
+  "heads": 4,
+  "epochs": 25,
+  "bs": 48,
+  "lr": 0.001
+ }
+}

@@ -1,0 +1,7 @@
+== SMOKE_M seed 0  MADT d=128 layers=3 heads=4 epochs=2 bs=48 lr=0.001  opts={'k': 6.0, 'd': 128, 'mdn_k': 0, 'chunk': 1, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6, 'n_agents': 8, 'n_users': 32, 'n_channels': 3, 'world': 20.0, 'alpha': 2.5}
+    sequences: 480 (= scenarios x 8 agents), rtg range [4.3, 109.7]
+    ep   1/2  val pos-MSE 0.1985  (1s)
+    ep   2/2  val pos-MSE 0.1515  (1s)
+    target  120.0 -> monitor   19.87  outage 0.6162
+selected target 120 by monitor return 19.87
+saved results2/SMOKE_M/seed0/best.pt
