@@ -1,0 +1,20 @@
+== SQ_q seed 0  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6, 'n_agents': 8, 'n_users': 32, 'n_channels': 3, 'world': 20.0, 'alpha': 2.5}  device=cpu  epochs=2  lr=0.0003  n_val=60
+rows 96000 (S=300, T=20, N=8); train scenarios 240, held-out 60
+exact Q: var 1197.38;  within-pair (action) part 1.117 = 0.09% of it;  gap +0.857 (sd 1.932), weak better at 20.6%
+  ep   1/2  mse(norm) 0.3694  2s
+  [final] held-out R2 +0.966 | learned gap train -0.058  held-out -0.022  (exact +0.861)  corr -0.053  slope -0.009  sign acc 0.480 (always-A 0.813)
+saved results2/SQ_q/seed0/summary.json
+== SQ_q seed 0  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6, 'n_agents': 8, 'n_users': 32, 'n_channels': 3, 'world': 20.0, 'alpha': 2.5}  device=cpu  epochs=60  lr=0.0003  n_val=60
+rows 96000 (S=300, T=20, N=8); train scenarios 240, held-out 60
+exact Q: var 1197.38;  within-pair (action) part 1.117 = 0.09% of it;  gap +0.857 (sd 1.932), weak better at 20.6%
+  ep   1/60  mse(norm) 0.3694  3s
+  ep  10/60  mse(norm) 0.0238  24s
+  ep  20/60  mse(norm) 0.0216  48s
+  [ep 20] held-out R2 +0.977 | learned gap train -0.040  held-out -0.059  (exact +0.861)  corr -0.027  slope -0.002  sign acc 0.362 (always-A 0.813)
+  ep  30/60  mse(norm) 0.0221  73s
+  ep  40/60  mse(norm) 0.0220  98s
+  [ep 40] held-out R2 +0.977 | learned gap train -0.046  held-out -0.068  (exact +0.861)  corr -0.009  slope -0.001  sign acc 0.352 (always-A 0.813)
+  ep  50/60  mse(norm) 0.0184  124s
+  ep  60/60  mse(norm) 0.0196  148s
+  [final] held-out R2 +0.978 | learned gap train -0.038  held-out -0.063  (exact +0.861)  corr -0.002  slope -0.000  sign acc 0.364 (always-A 0.813)
+saved results2/SQ_q/seed0/summary.json

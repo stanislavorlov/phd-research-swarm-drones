@@ -1,0 +1,28 @@
+{
+ "name": "SQ_adv",
+ "seed": 1,
+ "target": "adv",
+ "branch_bit": false,
+ "critic_full": false,
+ "epochs": 60,
+ "action_variance_share": 0.0009328927493908422,
+ "r2_heldout": 0.10018202915668317,
+ "train": {
+  "learned_gap": 0.5462003350257874,
+  "exact_gap": 0.8556104554732641,
+  "learned_gap_sd": 0.463873028755188,
+  "corr": 0.6337100191928821,
+  "slope": 0.1498587135760045,
+  "sign_acc": 0.7933333333333333,
+  "always_A_acc": 0.7889583333333333
+ },
+ "heldout": {
+  "learned_gap": 0.5036377906799316,
+  "exact_gap": 0.8614145676294963,
+  "learned_gap_sd": 0.37108534574508667,
+  "corr": 0.3884025493446067,
+  "slope": 0.07959491555948234,
+  "sign_acc": 0.8108333333333333,
+  "always_A_acc": 0.8133333333333334
+ }
+}
