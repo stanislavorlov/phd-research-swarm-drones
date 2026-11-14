@@ -182,6 +182,14 @@ def fig4(a):
         any_ = True
     if not any_:
         plt.close(fig); return
+    for arm, lab, c in (("online_A7", "paper 1, bcast = 0: distilled start", BLUE),
+                        ("scratch_450", "paper 1, bcast = 0: random init", ORANGE)):   # same protocol, poorer observation
+        fs = sorted(glob.glob(os.path.join(a.root, "online", arm, "run_masked_seed*.npz")))
+        if not fs:
+            continue
+        Y = np.stack([np.load(f)["returns"].mean(1) for f in fs]); it = np.load(fs[0])["iters"]
+        ax.plot(it, Y.mean(0), color=c, lw=1.3, ls=(0, (3, 2)), alpha=0.9, label=f"{lab}, {len(fs)} seeds")
+        print(f"  {arm:<10} it {int(it[-1])}: {Y[:, -1].mean():6.2f}   last-5 mean {Y[:, -5:].mean():6.2f}  (paper 1 configuration)")
     ax.axvspan(0, a.warmup, color=GRID, alpha=0.45, lw=0)
     ax.text(a.warmup / 2, 0.50, "critic warm-up\n(actor frozen)", transform=ax.get_xaxis_transform(),
             ha="center", va="center", fontsize=7.5, color=INK2)
@@ -192,7 +200,7 @@ def fig4(a):
                 ha="right", va="bottom", fontsize=7.5, color=INK2)
         print(f"  QD_strong monitor reference {np.mean(qd):.2f} over {len(qd)} students")
     ax.set_xlabel("PPO iteration  (640 team steps each)"); ax.set_ylabel("monitor return")
-    ax.legend(fontsize=7.5, loc="center right", bbox_to_anchor=(1.0, 0.67))
+    ax.legend(fontsize=7, loc="upper center", bbox_to_anchor=(0.5, -0.2), ncol=2)
     ax.grid(axis="y", color=GRID, lw=0.6); ax.set_axisbelow(True)
     save(fig, a.out, "fig_online_curves")
 
