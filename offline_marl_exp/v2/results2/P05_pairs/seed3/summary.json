@@ -8,13 +8,20 @@
   "chunk": 4,
   "obs_extra": false,
   "k_a": -1.0,
-  "bcast": 6
+  "bcast": 6,
+  "n_agents": 8,
+  "n_users": 32,
+  "n_channels": 3,
+  "world": 20.0,
+  "alpha": 2.5
  },
- "monitor_return_best": 72.15026092529297,
- "iql": {
-  "tau": 0.8,
+ "monitor_return_best": 82.8716049194336,
+ "weights": {
+  "source": "solver",
+  "mode": "awr",
   "beta": 0.5,
-  "gamma": 0.99,
-  "critic_epochs": 60
+  "tau": 0.8,
+  "critic_epochs": 0,
+  "critic_full": false
  }
 }

@@ -1,0 +1,364 @@
+nohup: ignoring input
++ P='--pairs_data data/pairs_train.pt --k 6 --k_a -1 --bcast 6 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300'
++ A='--solver_adv data/adv_train.pt'
++ M='--train_data data/expert_train_mix.pt --val_data data/expert_val_mix.pt --k 6 --k_a -1 --bcast 6'
++ for s in 3 4
++ python3 iql.py --name P_hard --weight_mode hard --beta 0 --pairs_data data/pairs_train.pt --k 6 --k_a -1 --bcast 6 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --solver_adv data/adv_train.pt --seed 3
+== P_hard seed 3  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6, 'n_agents': 8, 'n_users': 32, 'n_channels': 3, 'world': 20.0, 'alpha': 2.5}  device=cuda  weights=solver/hard beta=0.0
+rows: 96000  (paired; 300 scenarios x 2 branches)
+    hard selection: branch A kept at 0.794 of states
+    weights[hard]: mean 1.000  p50 0.000  p99 2.000  max 2.000  n_eff 48000/96000 (50.0%)
+    actor  ep    1/300  loss   2.6355  mse0 0.1941 acc 0.342  2s
+    actor  ep   10/300  loss   0.7015  mse0 0.1977 acc 0.917  4s
+    actor  ep   20/300  loss   0.3098  mse0 0.2377 acc 0.915  7s
+    actor  ep   30/300  loss   0.0196  mse0 0.2402 acc 0.917  10s
+    actor  ep   40/300  loss   0.1811  mse0 0.2460 acc 0.903  13s
+    actor  ep   50/300  loss   0.0027  mse0 0.2210 acc 0.916  15s
+    actor  ep   60/300  loss  -0.0654  mse0 0.2274 acc 0.914  18s
+    actor  ep   70/300  loss  -0.1748  mse0 0.2225 acc 0.908  21s
+    actor  ep   80/300  loss  -0.3198  mse0 0.2321 acc 0.900  24s
+    actor  ep   90/300  loss  -0.3021  mse0 0.2174 acc 0.915  26s
+    actor  ep  100/300  loss  -0.0833  mse0 0.2371 acc 0.915  29s
+    actor  ep  110/300  loss  -0.3126  mse0 0.2207 acc 0.917  32s
+    actor  ep  120/300  loss  -0.3911  mse0 0.2270 acc 0.910  35s
+    actor  ep  130/300  loss  -0.4145  mse0 0.2185 acc 0.921  37s
+    actor  ep  140/300  loss  -0.4260  mse0 0.2303 acc 0.925  40s
+    actor  ep  150/300  loss  -0.4893  mse0 0.2340 acc 0.925  43s
+    actor  ep  160/300  loss  -0.3916  mse0 0.2414 acc 0.927  46s
+    actor  ep  170/300  loss  -0.3554  mse0 0.2386 acc 0.912  49s
+    actor  ep  180/300  loss  -0.4925  mse0 0.2306 acc 0.924  51s
+    actor  ep  190/300  loss  -0.4505  mse0 0.2373 acc 0.914  54s
+    actor  ep  200/300  loss  -0.4255  mse0 0.2275 acc 0.921  57s
+    actor  ep  210/300  loss  -0.5051  mse0 0.2324 acc 0.907  60s
+    actor  ep  220/300  loss  -0.5859  mse0 0.2112 acc 0.914  62s
+    actor  ep  230/300  loss  -0.4960  mse0 0.2363 acc 0.912  65s
+    actor  ep  240/300  loss  -0.4372  mse0 0.2281 acc 0.906  68s
+    actor  ep  250/300  loss  -0.4604  mse0 0.2397 acc 0.910  71s
+    actor  ep  260/300  loss  -0.4567  mse0 0.2311 acc 0.914  73s
+    actor  ep  270/300  loss  -0.5678  mse0 0.2413 acc 0.914  76s
+    actor  ep  280/300  loss  -0.5536  mse0 0.2236 acc 0.918  79s
+    actor  ep  290/300  loss  -0.5727  mse0 0.2370 acc 0.927  81s
+    actor  ep  300/300  loss  -0.6716  mse0 0.2289 acc 0.920  84s
+[iql] closed-loop 90.29 on 128 monitor scenarios
+saved results2/P_hard/seed3/best.pt
++ python3 iql.py --name P_rand --weight_mode rand --beta 0 --pairs_data data/pairs_train.pt --k 6 --k_a -1 --bcast 6 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --solver_adv data/adv_train.pt --seed 3
+== P_rand seed 3  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6, 'n_agents': 8, 'n_users': 32, 'n_channels': 3, 'world': 20.0, 'alpha': 2.5}  device=cuda  weights=solver/rand beta=0.0
+rows: 96000  (paired; 300 scenarios x 2 branches)
+    rand selection: branch A kept at 0.501 of states
+    weights[rand]: mean 1.000  p50 0.000  p99 2.000  max 2.000  n_eff 48000/96000 (50.0%)
+    actor  ep    1/300  loss   2.7094  mse0 0.1957 acc 0.342  1s
+    actor  ep   10/300  loss   1.0261  mse0 0.2255 acc 0.917  3s
+    actor  ep   20/300  loss   0.6373  mse0 0.2323 acc 0.917  6s
+    actor  ep   30/300  loss   0.5079  mse0 0.2256 acc 0.918  9s
+    actor  ep   40/300  loss   0.4878  mse0 0.2557 acc 0.910  12s
+    actor  ep   50/300  loss   0.4199  mse0 0.2426 acc 0.921  15s
+    actor  ep   60/300  loss   0.4123  mse0 0.2361 acc 0.920  17s
+    actor  ep   70/300  loss   0.3649  mse0 0.2281 acc 0.914  20s
+    actor  ep   80/300  loss   0.2171  mse0 0.2420 acc 0.905  23s
+    actor  ep   90/300  loss   0.1694  mse0 0.2236 acc 0.917  26s
+    actor  ep  100/300  loss   0.3018  mse0 0.2445 acc 0.913  28s
+    actor  ep  110/300  loss   0.2162  mse0 0.2218 acc 0.922  31s
+    actor  ep  120/300  loss   0.2141  mse0 0.2350 acc 0.918  34s
+    actor  ep  130/300  loss   0.1621  mse0 0.2331 acc 0.922  37s
+    actor  ep  140/300  loss   0.1365  mse0 0.2279 acc 0.925  39s
+    actor  ep  150/300  loss   0.0120  mse0 0.2212 acc 0.922  42s
+    actor  ep  160/300  loss   0.1527  mse0 0.2488 acc 0.931  45s
+    actor  ep  170/300  loss   0.2051  mse0 0.2333 acc 0.919  47s
+    actor  ep  180/300  loss   0.0014  mse0 0.2314 acc 0.924  50s
+    actor  ep  190/300  loss   0.0754  mse0 0.2430 acc 0.928  53s
+    actor  ep  200/300  loss   0.0811  mse0 0.2380 acc 0.927  56s
+    actor  ep  210/300  loss   0.1728  mse0 0.2401 acc 0.910  58s
+    actor  ep  220/300  loss   0.0426  mse0 0.2259 acc 0.919  61s
+    actor  ep  230/300  loss   0.1139  mse0 0.2360 acc 0.922  64s
+    actor  ep  240/300  loss   0.0688  mse0 0.2297 acc 0.909  66s
+    actor  ep  250/300  loss   0.1287  mse0 0.2304 acc 0.917  69s
+    actor  ep  260/300  loss   0.0561  mse0 0.2468 acc 0.917  72s
+    actor  ep  270/300  loss   0.0371  mse0 0.2259 acc 0.917  75s
+    actor  ep  280/300  loss  -0.0310  mse0 0.2308 acc 0.922  77s
+    actor  ep  290/300  loss   0.0134  mse0 0.2402 acc 0.929  80s
+    actor  ep  300/300  loss  -0.0563  mse0 0.2397 acc 0.918  83s
+[iql] closed-loop 69.63 on 128 monitor scenarios
+saved results2/P_rand/seed3/best.pt
++ python3 iql.py --name P05_pairs --beta 0.5 --pairs_data data/pairs_train.pt --k 6 --k_a -1 --bcast 6 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --solver_adv data/adv_train.pt --seed 3
+== P05_pairs seed 3  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6, 'n_agents': 8, 'n_users': 32, 'n_channels': 3, 'world': 20.0, 'alpha': 2.5}  device=cuda  weights=solver/awr beta=0.5
+rows: 96000  (paired; 300 scenarios x 2 branches)
+    solver advantages: mean +0.000  sd 1.057  p1 -3.382  p99 +3.382
+    weights[awr]: mean 1.000  p50 0.845  p99 4.581  max 51.275  n_eff 41302/96000 (43.0%)
+    actor  ep    1/300  loss   2.9883  mse0 0.1943 acc 0.351  1s
+    actor  ep   10/300  loss   1.3149  mse0 0.2395 acc 0.920  3s
+    actor  ep   20/300  loss   0.7398  mse0 0.2209 acc 0.916  6s
+    actor  ep   30/300  loss   0.5164  mse0 0.2336 acc 0.919  9s
+    actor  ep   40/300  loss   0.5992  mse0 0.2631 acc 0.908  12s
+    actor  ep   50/300  loss   0.4526  mse0 0.2393 acc 0.921  15s
+    actor  ep   60/300  loss   0.4121  mse0 0.2393 acc 0.913  17s
+    actor  ep   70/300  loss   0.3082  mse0 0.2370 acc 0.909  20s
+    actor  ep   80/300  loss   0.2529  mse0 0.2322 acc 0.908  23s
+    actor  ep   90/300  loss   0.3073  mse0 0.2295 acc 0.914  26s
+    actor  ep  100/300  loss   0.4241  mse0 0.2500 acc 0.912  28s
+    actor  ep  110/300  loss   0.2564  mse0 0.2376 acc 0.919  31s
+    actor  ep  120/300  loss   0.2386  mse0 0.2411 acc 0.913  34s
+    actor  ep  130/300  loss   0.2923  mse0 0.2188 acc 0.921  37s
+    actor  ep  140/300  loss   0.1435  mse0 0.2229 acc 0.926  39s
+    actor  ep  150/300  loss   0.1043  mse0 0.2260 acc 0.926  42s
+    actor  ep  160/300  loss   0.1608  mse0 0.2413 acc 0.925  45s
+    actor  ep  170/300  loss   0.1631  mse0 0.2411 acc 0.912  48s
+    actor  ep  180/300  loss   0.1035  mse0 0.2308 acc 0.924  51s
+    actor  ep  190/300  loss   0.1178  mse0 0.2440 acc 0.924  53s
+    actor  ep  200/300  loss  -0.0002  mse0 0.2413 acc 0.925  56s
+    actor  ep  210/300  loss   0.0596  mse0 0.2281 acc 0.914  59s
+    actor  ep  220/300  loss   0.0057  mse0 0.2199 acc 0.917  61s
+    actor  ep  230/300  loss   0.1036  mse0 0.2295 acc 0.920  64s
+    actor  ep  240/300  loss   0.0818  mse0 0.2246 acc 0.910  67s
+    actor  ep  250/300  loss   0.0339  mse0 0.2329 acc 0.920  70s
+    actor  ep  260/300  loss  -0.1262  mse0 0.2377 acc 0.918  73s
+    actor  ep  270/300  loss   0.0943  mse0 0.2455 acc 0.919  75s
+    actor  ep  280/300  loss   0.0400  mse0 0.2280 acc 0.921  78s
+    actor  ep  290/300  loss   0.0200  mse0 0.2377 acc 0.924  81s
+    actor  ep  300/300  loss  -0.0654  mse0 0.2360 acc 0.922  84s
+[iql] closed-loop 82.87 on 128 monitor scenarios
+saved results2/P05_pairs/seed3/best.pt
++ python3 iql.py --name L125_pairs --beta 1.25 --pairs_data data/pairs_train.pt --k 6 --k_a -1 --bcast 6 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --critic_epochs 60 --seed 3
+== L125_pairs seed 3  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6, 'n_agents': 8, 'n_users': 32, 'n_channels': 3, 'world': 20.0, 'alpha': 2.5}  device=cuda  weights=learned/awr beta=1.25 tau=0.8 critic_epochs=60 critic_full=False
+rows: 96000  (paired; 300 scenarios x 2 branches)
+    critic ep   1/60  L_V   0.0000  L_Q   2.3497  1s
+    critic ep  10/60  L_V   0.0012  L_Q   1.9622  6s
+    critic ep  20/60  L_V   0.0672  L_Q   6.0699  11s
+    critic ep  30/60  L_V   0.2862  L_Q   4.2634  16s
+    critic ep  40/60  L_V   0.2279  L_Q   1.4086  21s
+    critic ep  50/60  L_V   0.2396  L_Q   1.3801  25s
+    critic ep  60/60  L_V   0.1905  L_Q   1.6777  30s
+    adv by branch: committed -0.219  counterfactual -0.219  gap +0.000
+    learned advantages: mean -0.219  sd 0.740  p1 -2.020  p99 +1.512
+    weights[learned]: mean 1.000  p50 0.657  p99 5.639  max 85.237  n_eff 32609/96000 (34.0%)
+    actor  ep    1/300  loss   2.7577  mse0 0.1952 acc 0.342  0s
+    actor  ep   10/300  loss   1.0246  mse0 0.2348 acc 0.917  3s
+    actor  ep   20/300  loss   0.7342  mse0 0.2238 acc 0.916  6s
+    actor  ep   30/300  loss   0.6365  mse0 0.2070 acc 0.920  8s
+    actor  ep   40/300  loss   0.4486  mse0 0.2089 acc 0.910  11s
+    actor  ep   50/300  loss   0.3985  mse0 0.2200 acc 0.920  14s
+    actor  ep   60/300  loss   0.3794  mse0 0.2181 acc 0.917  16s
+    actor  ep   70/300  loss   0.3067  mse0 0.2311 acc 0.912  19s
+    actor  ep   80/300  loss   0.2341  mse0 0.2265 acc 0.902  22s
+    actor  ep   90/300  loss   0.2672  mse0 0.2120 acc 0.915  25s
+    actor  ep  100/300  loss   0.2384  mse0 0.2344 acc 0.917  27s
+    actor  ep  110/300  loss   0.1540  mse0 0.2303 acc 0.919  30s
+    actor  ep  120/300  loss   0.1314  mse0 0.2315 acc 0.917  33s
+    actor  ep  130/300  loss   0.1006  mse0 0.2319 acc 0.922  36s
+    actor  ep  140/300  loss   0.0884  mse0 0.2250 acc 0.926  38s
+    actor  ep  150/300  loss   0.0754  mse0 0.2155 acc 0.927  41s
+    actor  ep  160/300  loss   0.1163  mse0 0.2454 acc 0.927  44s
+    actor  ep  170/300  loss   0.0864  mse0 0.2258 acc 0.917  47s
+    actor  ep  180/300  loss  -0.0275  mse0 0.2388 acc 0.925  49s
+    actor  ep  190/300  loss  -0.0840  mse0 0.2449 acc 0.923  52s
+    actor  ep  200/300  loss   0.0399  mse0 0.2375 acc 0.930  55s
+    actor  ep  210/300  loss   0.0795  mse0 0.2451 acc 0.916  58s
+    actor  ep  220/300  loss  -0.0456  mse0 0.2322 acc 0.918  60s
+    actor  ep  230/300  loss  -0.0399  mse0 0.2395 acc 0.920  63s
+    actor  ep  240/300  loss  -0.1108  mse0 0.2266 acc 0.910  66s
+    actor  ep  250/300  loss  -0.0146  mse0 0.2316 acc 0.915  69s
+    actor  ep  260/300  loss  -0.1846  mse0 0.2351 acc 0.920  71s
+    actor  ep  270/300  loss  -0.1123  mse0 0.2262 acc 0.921  74s
+    actor  ep  280/300  loss  -0.1325  mse0 0.2242 acc 0.921  77s
+    actor  ep  290/300  loss  -0.1331  mse0 0.2350 acc 0.927  79s
+    actor  ep  300/300  loss  -0.1180  mse0 0.2390 acc 0.919  82s
+[iql] closed-loop 66.73 on 128 monitor scenarios
+saved results2/L125_pairs/seed3/best.pt
++ python3 student.py --name B_mix --train_data data/expert_train_mix.pt --val_data data/expert_val_mix.pt --k 6 --k_a -1 --bcast 6 --rounds 0 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --seed 3
+== B_mix seed 3  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6, 'n_agents': 8, 'n_users': 32, 'n_channels': 3, 'world': 20.0, 'alpha': 2.5}  device=cuda  args={'k': 6.0, 'n_agents': 8, 'n_users': 32, 'n_channels': 3, 'world': 20.0, 'alpha': 2.5, 'd': 128, 'head': 'mdn', 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6, 'no_aug': False, 'epochs0': 300, 'bs': 2048, 'lr': 0.002, 'wd': 0.0001, 'w_chunk': 0.5, 'device': 'cuda', 'seed': 3, 'train_data': 'data/expert_train_mix.pt', 'val_data': 'data/expert_val_mix.pt', 'plan_restarts': 4, 'plan_rounds': 4, 'plan_iters': 80, 'plan_energy': None, 'name': 'B_mix', 'out': 'results2', 'rounds': 0, 'scen': 256, 'epochs_round': 30, 'beta0': 0.5, 'noise': 0.05, 'n_monitor': 128, 'n_final': 256, 'final': False, 'smoke': False, 'force': False}
+round-0 rows: train 192000  val 32000  (1s)
+monitor refs: stay-put 49.83  expert 117.03  (5s)
+-- round 0: BC 300 epochs
+    ep    1/300  loss   2.0086 | EMA train mse0 0.1844 acc 0.774 | val mse0 0.1815 acc 0.768 | 1s
+    ep   30/300  loss  -0.1207 | EMA train mse0 0.1428 acc 0.882 | val mse0 0.1427 acc 0.876 | 17s
+    ep   60/300  loss  -0.2474 | EMA train mse0 0.1379 acc 0.883 | val mse0 0.1372 acc 0.875 | 33s
+    ep   90/300  loss  -0.3767 | EMA train mse0 0.1361 acc 0.883 | val mse0 0.1366 acc 0.876 | 50s
+    ep  120/300  loss  -0.4140 | EMA train mse0 0.1338 acc 0.884 | val mse0 0.1364 acc 0.875 | 66s
+    ep  150/300  loss  -0.4059 | EMA train mse0 0.1331 acc 0.884 | val mse0 0.1361 acc 0.875 | 83s
+    ep  180/300  loss  -0.4105 | EMA train mse0 0.1339 acc 0.884 | val mse0 0.1353 acc 0.875 | 99s
+    ep  210/300  loss  -0.4099 | EMA train mse0 0.1335 acc 0.884 | val mse0 0.1357 acc 0.875 | 115s
+    ep  240/300  loss  -0.5197 | EMA train mse0 0.1331 acc 0.884 | val mse0 0.1356 acc 0.875 | 131s
+    ep  270/300  loss  -0.5036 | EMA train mse0 0.1329 acc 0.884 | val mse0 0.1353 acc 0.876 | 148s
+    ep  300/300  loss  -0.5082 | EMA train mse0 0.1330 acc 0.884 | val mse0 0.1353 acc 0.875 | 164s
+[round 0] closed-loop 76.60  expert-normalised 0.380  val mse0 0.1353 acc 0.875
+best round by monitor: 0  norm 0.380
+wrote results2/B_mix/seed3/summary.json
++ for s in 3 4
++ python3 iql.py --name P_hard --weight_mode hard --beta 0 --pairs_data data/pairs_train.pt --k 6 --k_a -1 --bcast 6 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --solver_adv data/adv_train.pt --seed 4
+== P_hard seed 4  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6, 'n_agents': 8, 'n_users': 32, 'n_channels': 3, 'world': 20.0, 'alpha': 2.5}  device=cuda  weights=solver/hard beta=0.0
+rows: 96000  (paired; 300 scenarios x 2 branches)
+    hard selection: branch A kept at 0.794 of states
+    weights[hard]: mean 1.000  p50 0.000  p99 2.000  max 2.000  n_eff 48000/96000 (50.0%)
+    actor  ep    1/300  loss   2.6824  mse0 0.2026 acc 0.682  1s
+    actor  ep   10/300  loss   0.7390  mse0 0.2051 acc 0.914  4s
+    actor  ep   20/300  loss   0.4000  mse0 0.2361 acc 0.907  6s
+    actor  ep   30/300  loss   0.2183  mse0 0.2745 acc 0.915  9s
+    actor  ep   40/300  loss  -0.0673  mse0 0.2396 acc 0.921  12s
+    actor  ep   50/300  loss  -0.1621  mse0 0.2513 acc 0.922  14s
+    actor  ep   60/300  loss  -0.0973  mse0 0.2416 acc 0.912  17s
+    actor  ep   70/300  loss  -0.2516  mse0 0.2359 acc 0.920  20s
+    actor  ep   80/300  loss  -0.3514  mse0 0.2452 acc 0.926  23s
+    actor  ep   90/300  loss  -0.4022  mse0 0.2198 acc 0.902  26s
+    actor  ep  100/300  loss  -0.3159  mse0 0.2371 acc 0.909  28s
+    actor  ep  110/300  loss  -0.3411  mse0 0.2224 acc 0.914  31s
+    actor  ep  120/300  loss  -0.4070  mse0 0.2251 acc 0.914  34s
+    actor  ep  130/300  loss  -0.3551  mse0 0.2376 acc 0.916  37s
+    actor  ep  140/300  loss  -0.5062  mse0 0.2376 acc 0.916  39s
+    actor  ep  150/300  loss  -0.3984  mse0 0.2367 acc 0.924  42s
+    actor  ep  160/300  loss  -0.4353  mse0 0.2355 acc 0.907  45s
+    actor  ep  170/300  loss  -0.5237  mse0 0.2254 acc 0.915  48s
+    actor  ep  180/300  loss  -0.3824  mse0 0.2534 acc 0.910  50s
+    actor  ep  190/300  loss  -0.5254  mse0 0.2280 acc 0.912  53s
+    actor  ep  200/300  loss  -0.4486  mse0 0.2334 acc 0.911  56s
+    actor  ep  210/300  loss  -0.5239  mse0 0.2436 acc 0.910  59s
+    actor  ep  220/300  loss  -0.5241  mse0 0.2294 acc 0.922  62s
+    actor  ep  230/300  loss  -0.4086  mse0 0.2321 acc 0.916  64s
+    actor  ep  240/300  loss  -0.6432  mse0 0.2298 acc 0.926  67s
+    actor  ep  250/300  loss  -0.4978  mse0 0.2503 acc 0.921  70s
+    actor  ep  260/300  loss  -0.5174  mse0 0.2407 acc 0.923  73s
+    actor  ep  270/300  loss  -0.5886  mse0 0.2283 acc 0.915  75s
+    actor  ep  280/300  loss  -0.5123  mse0 0.2535 acc 0.915  78s
+    actor  ep  290/300  loss  -0.7065  mse0 0.2351 acc 0.913  81s
+    actor  ep  300/300  loss  -0.6534  mse0 0.2361 acc 0.924  84s
+[iql] closed-loop 87.24 on 128 monitor scenarios
+saved results2/P_hard/seed4/best.pt
++ python3 iql.py --name P_rand --weight_mode rand --beta 0 --pairs_data data/pairs_train.pt --k 6 --k_a -1 --bcast 6 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --solver_adv data/adv_train.pt --seed 4
+== P_rand seed 4  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6, 'n_agents': 8, 'n_users': 32, 'n_channels': 3, 'world': 20.0, 'alpha': 2.5}  device=cuda  weights=solver/rand beta=0.0
+rows: 96000  (paired; 300 scenarios x 2 branches)
+    rand selection: branch A kept at 0.492 of states
+    weights[rand]: mean 1.000  p50 0.000  p99 2.000  max 2.000  n_eff 48000/96000 (50.0%)
+    actor  ep    1/300  loss   2.8784  mse0 0.2013 acc 0.757  1s
+    actor  ep   10/300  loss   0.9805  mse0 0.2138 acc 0.914  3s
+    actor  ep   20/300  loss   0.7529  mse0 0.2196 acc 0.908  6s
+    actor  ep   30/300  loss   0.5388  mse0 0.2570 acc 0.921  9s
+    actor  ep   40/300  loss   0.4867  mse0 0.2256 acc 0.917  11s
+    actor  ep   50/300  loss   0.3235  mse0 0.2536 acc 0.927  14s
+    actor  ep   60/300  loss   0.4415  mse0 0.2417 acc 0.914  17s
+    actor  ep   70/300  loss   0.2908  mse0 0.2278 acc 0.923  20s
+    actor  ep   80/300  loss   0.3532  mse0 0.2463 acc 0.929  22s
+    actor  ep   90/300  loss   0.2034  mse0 0.2205 acc 0.902  25s
+    actor  ep  100/300  loss   0.2214  mse0 0.2205 acc 0.910  28s
+    actor  ep  110/300  loss   0.3277  mse0 0.2521 acc 0.917  31s
+    actor  ep  120/300  loss   0.1810  mse0 0.2324 acc 0.914  33s
+    actor  ep  130/300  loss   0.2168  mse0 0.2455 acc 0.915  36s
+    actor  ep  140/300  loss   0.1375  mse0 0.2407 acc 0.921  39s
+    actor  ep  150/300  loss   0.2395  mse0 0.2431 acc 0.926  42s
+    actor  ep  160/300  loss   0.1501  mse0 0.2282 acc 0.912  45s
+    actor  ep  170/300  loss  -0.0073  mse0 0.2351 acc 0.915  47s
+    actor  ep  180/300  loss   0.1714  mse0 0.2457 acc 0.908  50s
+    actor  ep  190/300  loss   0.0156  mse0 0.2269 acc 0.918  53s
+    actor  ep  200/300  loss   0.1686  mse0 0.2384 acc 0.919  56s
+    actor  ep  210/300  loss   0.1446  mse0 0.2396 acc 0.910  58s
+    actor  ep  220/300  loss  -0.1355  mse0 0.2293 acc 0.921  61s
+    actor  ep  230/300  loss   0.0203  mse0 0.2356 acc 0.920  64s
+    actor  ep  240/300  loss   0.0452  mse0 0.2287 acc 0.930  66s
+    actor  ep  250/300  loss   0.1314  mse0 0.2560 acc 0.917  69s
+    actor  ep  260/300  loss   0.0153  mse0 0.2386 acc 0.924  72s
+    actor  ep  270/300  loss   0.0374  mse0 0.2280 acc 0.919  74s
+    actor  ep  280/300  loss   0.0540  mse0 0.2508 acc 0.920  77s
+    actor  ep  290/300  loss   0.0138  mse0 0.2216 acc 0.917  80s
+    actor  ep  300/300  loss   0.0452  mse0 0.2548 acc 0.925  83s
+[iql] closed-loop 72.40 on 128 monitor scenarios
+saved results2/P_rand/seed4/best.pt
++ python3 iql.py --name P05_pairs --beta 0.5 --pairs_data data/pairs_train.pt --k 6 --k_a -1 --bcast 6 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --solver_adv data/adv_train.pt --seed 4
+== P05_pairs seed 4  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6, 'n_agents': 8, 'n_users': 32, 'n_channels': 3, 'world': 20.0, 'alpha': 2.5}  device=cuda  weights=solver/awr beta=0.5
+rows: 96000  (paired; 300 scenarios x 2 branches)
+    solver advantages: mean +0.000  sd 1.057  p1 -3.382  p99 +3.382
+    weights[awr]: mean 1.000  p50 0.845  p99 4.581  max 51.275  n_eff 41302/96000 (43.0%)
+    actor  ep    1/300  loss   2.6984  mse0 0.2022 acc 0.616  1s
+    actor  ep   10/300  loss   1.2519  mse0 0.2524 acc 0.915  4s
+    actor  ep   20/300  loss   0.7615  mse0 0.2381 acc 0.907  6s
+    actor  ep   30/300  loss   0.6089  mse0 0.2573 acc 0.917  9s
+    actor  ep   40/300  loss   0.4395  mse0 0.2505 acc 0.922  12s
+    actor  ep   50/300  loss   0.3554  mse0 0.2614 acc 0.928  15s
+    actor  ep   60/300  loss   0.4651  mse0 0.2557 acc 0.911  17s
+    actor  ep   70/300  loss   0.2940  mse0 0.2410 acc 0.921  20s
+    actor  ep   80/300  loss   0.3357  mse0 0.2629 acc 0.928  23s
+    actor  ep   90/300  loss   0.2921  mse0 0.2254 acc 0.903  26s
+    actor  ep  100/300  loss   0.1658  mse0 0.2316 acc 0.910  28s
+    actor  ep  110/300  loss   0.1638  mse0 0.2301 acc 0.915  31s
+    actor  ep  120/300  loss   0.1389  mse0 0.2451 acc 0.915  34s
+    actor  ep  130/300  loss   0.1690  mse0 0.2535 acc 0.914  37s
+    actor  ep  140/300  loss   0.1522  mse0 0.2276 acc 0.916  40s
+    actor  ep  150/300  loss   0.1572  mse0 0.2457 acc 0.927  42s
+    actor  ep  160/300  loss   0.0692  mse0 0.2371 acc 0.910  45s
+    actor  ep  170/300  loss   0.1370  mse0 0.2288 acc 0.915  48s
+    actor  ep  180/300  loss   0.1970  mse0 0.2576 acc 0.911  51s
+    actor  ep  190/300  loss   0.0741  mse0 0.2308 acc 0.917  53s
+    actor  ep  200/300  loss   0.0384  mse0 0.2397 acc 0.915  56s
+    actor  ep  210/300  loss   0.1442  mse0 0.2488 acc 0.907  59s
+    actor  ep  220/300  loss   0.0186  mse0 0.2238 acc 0.926  62s
+    actor  ep  230/300  loss   0.0907  mse0 0.2328 acc 0.927  65s
+    actor  ep  240/300  loss   0.0599  mse0 0.2316 acc 0.931  67s
+    actor  ep  250/300  loss   0.1851  mse0 0.2466 acc 0.916  70s
+    actor  ep  260/300  loss  -0.0029  mse0 0.2322 acc 0.924  73s
+    actor  ep  270/300  loss  -0.0472  mse0 0.2389 acc 0.921  76s
+    actor  ep  280/300  loss  -0.0594  mse0 0.2544 acc 0.917  78s
+    actor  ep  290/300  loss  -0.0913  mse0 0.2298 acc 0.917  81s
+    actor  ep  300/300  loss  -0.0073  mse0 0.2405 acc 0.927  84s
+[iql] closed-loop 82.42 on 128 monitor scenarios
+saved results2/P05_pairs/seed4/best.pt
++ python3 iql.py --name L125_pairs --beta 1.25 --pairs_data data/pairs_train.pt --k 6 --k_a -1 --bcast 6 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --critic_epochs 60 --seed 4
+== L125_pairs seed 4  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6, 'n_agents': 8, 'n_users': 32, 'n_channels': 3, 'world': 20.0, 'alpha': 2.5}  device=cuda  weights=learned/awr beta=1.25 tau=0.8 critic_epochs=60 critic_full=False
+rows: 96000  (paired; 300 scenarios x 2 branches)
+    critic ep   1/60  L_V   0.0001  L_Q   2.5241  1s
+    critic ep  10/60  L_V   0.0025  L_Q   1.7284  6s
+    critic ep  20/60  L_V   0.1306  L_Q   7.9223  11s
+    critic ep  30/60  L_V   0.2851  L_Q   3.2704  16s
+    critic ep  40/60  L_V   0.4040  L_Q   4.2574  21s
+    critic ep  50/60  L_V   0.4477  L_Q   2.3920  26s
+    critic ep  60/60  L_V   0.2013  L_Q   1.4182  30s
+    adv by branch: committed +0.138  counterfactual +0.139  gap -0.000
+    learned advantages: mean +0.138  sd 0.638  p1 -1.602  p99 +1.609
+    weights[learned]: mean 1.000  p50 0.762  p99 4.620  max 61.852  n_eff 47059/96000 (49.0%)
+    actor  ep    1/300  loss   2.6804  mse0 0.2031 acc 0.765  0s
+    actor  ep   10/300  loss   0.9876  mse0 0.2256 acc 0.914  3s
+    actor  ep   20/300  loss   0.7797  mse0 0.2377 acc 0.908  6s
+    actor  ep   30/300  loss   0.6888  mse0 0.2456 acc 0.918  8s
+    actor  ep   40/300  loss   0.4670  mse0 0.2510 acc 0.919  11s
+    actor  ep   50/300  loss   0.3880  mse0 0.2398 acc 0.923  14s
+    actor  ep   60/300  loss   0.6653  mse0 0.2232 acc 0.915  17s
+    actor  ep   70/300  loss   0.4286  mse0 0.2291 acc 0.921  19s
+    actor  ep   80/300  loss   0.3201  mse0 0.2485 acc 0.933  22s
+    actor  ep   90/300  loss   0.2699  mse0 0.2317 acc 0.903  25s
+    actor  ep  100/300  loss   0.2903  mse0 0.2012 acc 0.911  28s
+    actor  ep  110/300  loss   0.3485  mse0 0.2446 acc 0.918  30s
+    actor  ep  120/300  loss   0.3026  mse0 0.2231 acc 0.915  33s
+    actor  ep  130/300  loss   0.3076  mse0 0.2402 acc 0.912  36s
+    actor  ep  140/300  loss   0.3001  mse0 0.2278 acc 0.916  39s
+    actor  ep  150/300  loss   0.2791  mse0 0.2461 acc 0.927  42s
+    actor  ep  160/300  loss   0.1717  mse0 0.2242 acc 0.912  44s
+    actor  ep  170/300  loss   0.1658  mse0 0.2251 acc 0.914  47s
+    actor  ep  180/300  loss   0.2717  mse0 0.2459 acc 0.910  50s
+    actor  ep  190/300  loss   0.1075  mse0 0.2281 acc 0.917  53s
+    actor  ep  200/300  loss   0.2095  mse0 0.2383 acc 0.917  55s
+    actor  ep  210/300  loss   0.2204  mse0 0.2372 acc 0.909  58s
+    actor  ep  220/300  loss   0.0570  mse0 0.2233 acc 0.922  61s
+    actor  ep  230/300  loss   0.0947  mse0 0.2326 acc 0.924  63s
+    actor  ep  240/300  loss   0.0548  mse0 0.2340 acc 0.931  66s
+    actor  ep  250/300  loss   0.1531  mse0 0.2519 acc 0.919  69s
+    actor  ep  260/300  loss   0.1937  mse0 0.2284 acc 0.924  71s
+    actor  ep  270/300  loss   0.1148  mse0 0.2221 acc 0.920  74s
+    actor  ep  280/300  loss   0.1820  mse0 0.2334 acc 0.920  77s
+    actor  ep  290/300  loss   0.1451  mse0 0.2224 acc 0.915  80s
+    actor  ep  300/300  loss   0.0086  mse0 0.2366 acc 0.925  82s
+[iql] closed-loop 69.43 on 128 monitor scenarios
+saved results2/L125_pairs/seed4/best.pt
++ python3 student.py --name B_mix --train_data data/expert_train_mix.pt --val_data data/expert_val_mix.pt --k 6 --k_a -1 --bcast 6 --rounds 0 --head mdn --d 128 --mdn_k 5 --chunk 4 --epochs0 300 --seed 4
+== B_mix seed 4  opts={'k': 6.0, 'd': 128, 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6, 'n_agents': 8, 'n_users': 32, 'n_channels': 3, 'world': 20.0, 'alpha': 2.5}  device=cuda  args={'k': 6.0, 'n_agents': 8, 'n_users': 32, 'n_channels': 3, 'world': 20.0, 'alpha': 2.5, 'd': 128, 'head': 'mdn', 'mdn_k': 5, 'chunk': 4, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6, 'no_aug': False, 'epochs0': 300, 'bs': 2048, 'lr': 0.002, 'wd': 0.0001, 'w_chunk': 0.5, 'device': 'cuda', 'seed': 4, 'train_data': 'data/expert_train_mix.pt', 'val_data': 'data/expert_val_mix.pt', 'plan_restarts': 4, 'plan_rounds': 4, 'plan_iters': 80, 'plan_energy': None, 'name': 'B_mix', 'out': 'results2', 'rounds': 0, 'scen': 256, 'epochs_round': 30, 'beta0': 0.5, 'noise': 0.05, 'n_monitor': 128, 'n_final': 256, 'final': False, 'smoke': False, 'force': False}
+round-0 rows: train 192000  val 32000  (1s)
+monitor refs: stay-put 49.83  expert 117.03  (5s)
+-- round 0: BC 300 epochs
+    ep    1/300  loss   1.9290 | EMA train mse0 0.1580 acc 0.807 | val mse0 0.1569 acc 0.804 | 1s
+    ep   30/300  loss  -0.0878 | EMA train mse0 0.1395 acc 0.883 | val mse0 0.1352 acc 0.876 | 17s
+    ep   60/300  loss  -0.3869 | EMA train mse0 0.1361 acc 0.884 | val mse0 0.1355 acc 0.876 | 33s
+    ep   90/300  loss  -0.2690 | EMA train mse0 0.1345 acc 0.885 | val mse0 0.1352 acc 0.877 | 50s
+    ep  120/300  loss  -0.4156 | EMA train mse0 0.1335 acc 0.885 | val mse0 0.1347 acc 0.877 | 66s
+    ep  150/300  loss  -0.5036 | EMA train mse0 0.1327 acc 0.886 | val mse0 0.1346 acc 0.876 | 82s
+    ep  180/300  loss  -0.4344 | EMA train mse0 0.1331 acc 0.886 | val mse0 0.1348 acc 0.876 | 98s
+    ep  210/300  loss  -0.6370 | EMA train mse0 0.1334 acc 0.886 | val mse0 0.1349 acc 0.876 | 115s
+    ep  240/300  loss  -0.5021 | EMA train mse0 0.1335 acc 0.885 | val mse0 0.1359 acc 0.875 | 131s
+    ep  270/300  loss  -0.5089 | EMA train mse0 0.1340 acc 0.885 | val mse0 0.1356 acc 0.875 | 147s
+    ep  300/300  loss  -0.5585 | EMA train mse0 0.1340 acc 0.885 | val mse0 0.1360 acc 0.875 | 163s
+[round 0] closed-loop 72.07  expert-normalised 0.313  val mse0 0.1360 acc 0.875
+best round by monitor: 0  norm 0.313
+wrote results2/B_mix/seed4/summary.json

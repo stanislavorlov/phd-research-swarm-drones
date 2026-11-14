@@ -1,0 +1,17 @@
+== M_mix seed 3  MADT d=128 layers=3 heads=4 epochs=25 bs=48 lr=0.001  opts={'k': 6.0, 'd': 128, 'mdn_k': 0, 'chunk': 1, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6, 'n_agents': 8, 'n_users': 32, 'n_channels': 3, 'world': 20.0, 'alpha': 2.5}
+    sequences: 9600 (= scenarios x 8 agents), rtg range [3.8, 145.1]
+    ep   1/25  val pos-MSE 0.0842  (11s)
+    ep   5/25  val pos-MSE 0.0536  (46s)
+    ep  10/25  val pos-MSE 0.0496  (90s)
+    ep  15/25  val pos-MSE 0.0480  (134s)
+    ep  20/25  val pos-MSE 0.0463  (178s)
+    ep  25/25  val pos-MSE 0.0460  (222s)
+    target  100.0 -> monitor   66.97  outage 0.1071
+    target  120.0 -> monitor   69.20  outage 0.1455
+    target  140.0 -> monitor   67.36  outage 0.2098
+    target  160.0 -> monitor   63.64  outage 0.2560
+selected target 120.0 by monitor return 69.20
+saved results2/M_mix/seed3/best.pt
+== M_mix seed 3  MADT d=128 layers=3 heads=4 epochs=25 bs=48 lr=0.001  opts={'k': 6.0, 'd': 128, 'mdn_k': 0, 'chunk': 1, 'obs_extra': False, 'k_a': -1.0, 'bcast': 6, 'n_agents': 8, 'n_users': 32, 'n_channels': 3, 'world': 20.0, 'alpha': 2.5}
+loaded results2/M_mix/seed3/best.pt  target=120.0
+[final] seeds 900000..901023 (n=1024, strong++): return 68.66  norm 0.254  outage 0.1522  (stay 50.56, den 71.17)

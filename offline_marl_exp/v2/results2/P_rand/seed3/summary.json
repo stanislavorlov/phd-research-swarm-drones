@@ -1,0 +1,27 @@
+{
+ "name": "P_rand",
+ "seed": 3,
+ "opts": {
+  "k": 6.0,
+  "d": 128,
+  "mdn_k": 5,
+  "chunk": 4,
+  "obs_extra": false,
+  "k_a": -1.0,
+  "bcast": 6,
+  "n_agents": 8,
+  "n_users": 32,
+  "n_channels": 3,
+  "world": 20.0,
+  "alpha": 2.5
+ },
+ "monitor_return_best": 69.62577819824219,
+ "weights": {
+  "source": "solver",
+  "mode": "rand",
+  "beta": 0.0,
+  "tau": 0.8,
+  "critic_epochs": 0,
+  "critic_full": false
+ }
+}
