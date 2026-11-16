@@ -203,6 +203,33 @@ def fig4(a):
     ax.legend(fontsize=7, loc="upper center", bbox_to_anchor=(0.5, -0.2), ncol=2)
     ax.grid(axis="y", color=GRID, lw=0.6); ax.set_axisbelow(True)
     save(fig, a.out, "fig_online_curves")
+    fig4_long(a)
+
+
+def fig4_long(a):
+    """Fig 2b: the 4,500-iteration reruns (bcast = 6). Mean of three seeds, thin lines are seeds."""
+    root = a.longroot or a.root
+    fig, ax = plt.subplots(figsize=(5.6, 2.7))
+    print("Fig 2b (4,500-iteration reruns, monitor):")
+    for arm, lab, c in (("ft_hard_4500", "from P_hard", BLUE), ("ft_scratch_4500", "from random init", ORANGE)):
+        fs = sorted(glob.glob(os.path.join(root, "online", arm, "run_masked_seed*.npz")))
+        if not fs:
+            plt.close(fig); print(f"  {arm}: no npz; skipped"); return
+        D = [np.load(f) for f in fs]
+        it = D[0]["iters"]; Y = np.stack([d["returns"].mean(1) for d in D])
+        for y in Y:
+            ax.plot(it, y, color=c, lw=0.6, alpha=0.4)
+        ax.plot(it, Y.mean(0), color=c, lw=2.0, label=f"{lab}, {len(fs)} seeds")
+        print(f"  {arm:<16} last-10-eval mean {Y[:, -10:].mean():6.2f}  per seed {np.round(Y[:, -10:].mean(1), 2)}")
+    ax.axvline(450, color=INK2, lw=0.8, ls=(0, (1, 2)))
+    ax.text(470, ax.get_ylim()[0] + 2, "450", fontsize=7.5, color=INK2)
+    qd = [json.load(open(p))["monitor_return_best"] for p in sorted(glob.glob(os.path.join(a.root, "QD_strong", "seed*", "summary.json")))]
+    if qd:
+        ax.axhline(np.mean(qd), color=INK2, lw=0.9, ls=(0, (4, 2)))
+        ax.text(4500, np.mean(qd) + 0.8, f"DAgger, strong labels ({np.mean(qd):.2f})", ha="right", va="bottom", fontsize=7.5, color=INK2)
+    ax.set_xlabel("PPO iteration  (640 team steps each)"); ax.set_ylabel("monitor return")
+    ax.legend(fontsize=7, loc="lower right"); ax.grid(axis="y", color=GRID, lw=0.6); ax.set_axisbelow(True)
+    save(fig, a.out, "fig_online_long")
 
 
 # ----------------------------------------------------------------------------- Fig 5
@@ -287,6 +314,7 @@ def main():
     ap.add_argument("--root", default="results2")
     ap.add_argument("--out", default="figs")
     ap.add_argument("--adv", default=None, help="npz from dump_learned_adv.py (default: first data/learned_adv_*.npz)")
+    ap.add_argument("--longroot", default="", help="results dir holding online/ft_*_4500")
     ap.add_argument("--warmup", type=int, default=100, help="critic warm-up iterations to shade in Fig 4")
     ap.add_argument("--only", nargs="*", type=int, default=[2, 3, 4, 5])
     a = ap.parse_args()
