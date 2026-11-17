@@ -83,14 +83,14 @@ def fig2(a):
 
 # ----------------------------------------------------------------------------- Fig 3
 OFFLINE = [  # (label, file tag, key)  -- order is cosmetic; the plot sorts by mean
-    ("P_hard: keep better branch", "offline5_test", "P_hard"),
-    ("Q_strong: BC, clean data only", "quality_test", "Q_strong"),
-    (r"P05: AWR, exact adv., $\beta$=0.5", "offline5_test", "P05_pairs"),
-    ("B_mix: BC, mixed data", "offline5_test", "B_mix"),
-    ("P_rand: keep random branch", "offline5_test", "P_rand"),
-    ("P0: BC, paired data", "offline5_test", "P0_pairs"),
-    (r"L125: IQL, learned adv., $\beta$=1.25", "offline5_test", "L125_pairs"),
-    ("M_mix: MADT, mixed data", None, "M_mix"),
+    ("hard selection (exact advantage)", "offline5_test", "P_hard"),
+    ("BC, strong labels (clean data)", "quality_test", "Q_strong"),
+    (r"exact AWR, $\beta$=0.5", "offline5_test", "P05_pairs"),
+    ("BC, mixed data", "offline5_test", "B_mix"),
+    ("random selection (control)", "offline5_test", "P_rand"),
+    ("BC, paired data (unweighted)", "offline5_test", "P0_pairs"),
+    (r"IQL, learned advantage, $\beta$=1.25", "offline5_test", "L125_pairs"),
+    ("MADT, mixed data", None, "M_mix"),
 ]
 FINAL = re.compile(r"\[final\].*return\s+([\d.]+)\s+norm\s+([\d.]+).*\(stay\s+([\d.]+),\s+den\s+([\d.]+)\)")
 
@@ -151,15 +151,15 @@ def fig3(a):
                 color=AQUA, fontsize=7.5, ha="right", va="top")
     ax.set_yticks(range(len(rows))); ax.set_yticklabels([r[0] for r in rows], fontsize=8)
     ax.set_ylim(-0.6, len(rows) - 0.4)
-    ax.set_xlabel("normalised test return  (stay = 0, strong++ planner = 1)")
+    ax.set_xlabel("normalised test return  (stay-put = 0, reference planner = 1)")
     ax.grid(axis="x", color=GRID, lw=0.6); ax.set_axisbelow(True)
     save(fig, a.out, "fig_offline_test")
 
 
 # ----------------------------------------------------------------------------- Fig 4
 def fig4(a):
-    arms = [("ft_hard", "from P_hard (filtered)", BLUE), ("ft_bc", "from Q_strong (clean-data BC)", AQUA),
-            ("ft_scratch", "from random init", ORANGE)]
+    arms = [("ft_hard", "hard-selection start + online", BLUE), ("ft_bc", "BC start + online", AQUA),
+            ("ft_scratch", "from scratch", ORANGE)]
     fig, ax = plt.subplots(figsize=(5.6, 2.9))
     print("Fig 4 (monitor, 128 scenarios; mean over scenarios at each evaluation):")
     any_ = False
@@ -196,7 +196,7 @@ def fig4(a):
     qd = [json.load(open(p))["monitor_return_best"] for p in sorted(glob.glob(os.path.join(a.root, "QD_strong", "seed*", "summary.json")))]
     if qd:
         ax.axhline(np.mean(qd), color=INK2, lw=0.9, ls=(0, (4, 2)))
-        ax.text(ax.get_xlim()[1], np.mean(qd) + 1.0, f"DAgger, strong labels ({np.mean(qd):.2f})",
+        ax.text(ax.get_xlim()[1], np.mean(qd) + 1.0, f"BC + DAgger, strong labels ({np.mean(qd):.2f})",
                 ha="right", va="bottom", fontsize=7.5, color=INK2)
         print(f"  QD_strong monitor reference {np.mean(qd):.2f} over {len(qd)} students")
     ax.set_xlabel("PPO iteration  (640 team steps each)"); ax.set_ylabel("monitor return")
@@ -211,7 +211,7 @@ def fig4_long(a):
     root = a.longroot or a.root
     fig, ax = plt.subplots(figsize=(5.6, 2.7))
     print("Fig 2b (4,500-iteration reruns, monitor):")
-    for arm, lab, c in (("ft_hard_4500", "from P_hard", BLUE), ("ft_scratch_4500", "from random init", ORANGE)):
+    for arm, lab, c in (("ft_hard_4500", "hard-selection start + online", BLUE), ("ft_scratch_4500", "from scratch", ORANGE)):
         fs = sorted(glob.glob(os.path.join(root, "online", arm, "run_masked_seed*.npz")))
         if not fs:
             plt.close(fig); print(f"  {arm}: no npz; skipped"); return
@@ -226,7 +226,7 @@ def fig4_long(a):
     qd = [json.load(open(p))["monitor_return_best"] for p in sorted(glob.glob(os.path.join(a.root, "QD_strong", "seed*", "summary.json")))]
     if qd:
         ax.axhline(np.mean(qd), color=INK2, lw=0.9, ls=(0, (4, 2)))
-        ax.text(4500, np.mean(qd) + 0.8, f"DAgger, strong labels ({np.mean(qd):.2f})", ha="right", va="bottom", fontsize=7.5, color=INK2)
+        ax.text(4500, np.mean(qd) + 0.8, f"BC + DAgger, strong labels ({np.mean(qd):.2f})", ha="right", va="bottom", fontsize=7.5, color=INK2)
     ax.set_xlabel("PPO iteration  (640 team steps each)"); ax.set_ylabel("monitor return")
     ax.legend(fontsize=7, loc="lower right"); ax.grid(axis="y", color=GRID, lw=0.6); ax.set_axisbelow(True)
     save(fig, a.out, "fig_online_long")
